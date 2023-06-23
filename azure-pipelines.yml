@@ -1,0 +1,37 @@
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+    - feature/*
+    - release/v*
+  tags:
+    include:
+      - '*'
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.9'
+    displayName: 'Install Python 3.9'
+  - script: |
+      python -m pip install flake8
+      flake8 app test
+    displayName: 'Lint code'
+  - script: |
+      python -m pip install vulture
+      vulture app test
+    displayName: 'Find dead code'
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r app/requirements.txt
+    displayName: 'Install dependencies'
+
+  - script: |
+      pip install pytest pytest-azurepipelines
+      pytest
+    displayName: 'pytest'
+      

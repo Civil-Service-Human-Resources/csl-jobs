@@ -1,5 +1,5 @@
 import argparse
-from app.jobs.tokens import clear_duplicate_tokens, clear_redundant_tokens
+from jobs.tokens import clear_duplicate_tokens, clear_redundant_tokens
 
 
 def run():

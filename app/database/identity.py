@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine, text
-from app.config import (
+from config import (
     get_database_connection,
     LOG_DB_TRANSACTIONS,
     DELETE_TOKEN_BATCH_SIZE,
 )
-from app.log import logger
+from log import logger
 
 __db = create_engine(get_database_connection("identity"), echo=LOG_DB_TRANSACTIONS)
 

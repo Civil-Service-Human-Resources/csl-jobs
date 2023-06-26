@@ -1,12 +1,11 @@
-from app.database import identity
-from app.log import logger
+from database import identity
+from log import logger
 
 
 def clear_duplicate_tokens():
     logger.info("Checking for duplicate tokens")
     tokens = identity.get_duplicate_tokens()
     logger.info(f"Found {len(tokens)} duplicate tokens")
-    print(tokens)
     for token in tokens:
         auth_id = token[0]
         logger.info(f"Deactivating token with auth ID {auth_id}")

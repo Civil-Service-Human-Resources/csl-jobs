@@ -32,6 +32,6 @@ steps:
 
   - script: |
       pip install pytest pytest-azurepipelines
-      python -m pytest
+      export PYTHONPATH="./app" && python -m pytest
     displayName: 'pytest'
       

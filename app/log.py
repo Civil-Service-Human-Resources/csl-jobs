@@ -1,4 +1,4 @@
-from config import APPLICATIONINSIGHTS_CONNECTION_STRING
+from app.config import APPLICATIONINSIGHTS_CONNECTION_STRING
 import logging
 
 logging.basicConfig(format='{"timestamp":"%(asctime)s", "level":"%(levelname)s", "message":"%(message)s"}', level="INFO")

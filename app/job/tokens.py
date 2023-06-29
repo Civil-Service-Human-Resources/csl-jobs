@@ -43,6 +43,7 @@ def __clear_redundant_tokens():
         logger.info(f"Deleting valid user tokens ({valid_user_token_count})")
         identity.delete_valid_tokens(valid_user_token_count)
 
+
 def run_clear_duplicate_tokens():
     run_job_func("clear duplicate tokens", __clear_duplicate_tokens)
 

@@ -1,5 +1,6 @@
 from log import logger
 
+
 def run_job_func(job_name, job_func):
     logger.info(f"Running job '{job_name}'")
     try:

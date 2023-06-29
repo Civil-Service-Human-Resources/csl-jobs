@@ -29,6 +29,7 @@ DELETE_VALID_USER_TOKEN_SQL = text(
     f"delete from token where status = 0 and user_name is not null limit {DELETE_TOKEN_BATCH_SIZE};"
 )
 
+
 def get_duplicate_tokens():
     stmt = text(
         """

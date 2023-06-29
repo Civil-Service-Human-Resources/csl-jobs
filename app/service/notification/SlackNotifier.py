@@ -1,6 +1,7 @@
 import Notifier
 import requests
 
+
 class SlackNotifier(Notifier):
 
     def __init__(self, webhook_url) -> None:

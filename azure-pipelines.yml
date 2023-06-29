@@ -68,7 +68,7 @@ stages:
                   artifact: $(appArtifact)
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: 'CSL-Staging'
+                    azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
                     package: $(appArtifact)

@@ -69,5 +69,5 @@ stages:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
-                    package: $(System.ArtifactsDirectory)/**/*.zip
+                    package: $(System.DefaultWorkingDirectory)/**/*.zip
                     deploymentMethod: 'auto'

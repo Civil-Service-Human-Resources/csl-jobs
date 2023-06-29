@@ -54,7 +54,6 @@ def deactivate_token(authentication_id):
     )
     with __db.connect() as conn:
         conn.execute(stmt)
-        conn.commit()
 
 
 def run_count_query(sql):
@@ -77,7 +76,6 @@ def delete_tokens(sql, token_count):
                     f"{token_count} tokens remaining. Deleting {DELETE_TOKEN_BATCH_SIZE}"
                 )
                 conn.execute(sql)
-                conn.commit()
                 token_count = token_count - DELETE_TOKEN_BATCH_SIZE
 
             logger.info("Tokens deleted")

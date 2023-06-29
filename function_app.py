@@ -1,6 +1,6 @@
 import azure.functions as func
 import os
-from job import tokens
+from app.job import tokens
 
 app = func.FunctionApp()
 DUPLICATE_TOKEN_CRON = os.environ['DUPLICATE_TOKEN_CRON']

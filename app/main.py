@@ -1,5 +1,5 @@
 import argparse
-from jobs.tokens import clear_duplicate_tokens, clear_redundant_tokens
+from job.tokens import run_clear_duplicate_tokens, run_clear_redundant_tokens
 
 
 def run():
@@ -24,9 +24,9 @@ def format_args():
 
 def run_commands(args):
     if args.job == "clear_duplicate_tokens":
-        clear_duplicate_tokens()
+        run_clear_duplicate_tokens()
     elif args.job == "delete_redundant_tokens":
-        clear_redundant_tokens()
+        run_clear_redundant_tokens()
 
 
 if __name__ == "__main__":

@@ -74,4 +74,5 @@ stages:
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
                     package: '$(Pipeline.Workspace)/drop/*.zip'
-                    deploymentMethod: 'zipDeploy'
+                    runtimeStack: PYTHON|3.9
+                    deploymentMethod: 'runFromPackage'

@@ -68,5 +68,6 @@ stages:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
+                    runtimeStack: PYTHON|3.9
                     package: '$(Pipeline.Workspace)/drop/*.zip'
                     deploymentMethod: 'auto'

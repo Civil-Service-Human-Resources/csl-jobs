@@ -9,13 +9,6 @@ trigger:
     include:
       - '*'
 
-variables:
-  - name: acr_repo_suffix
-    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags') }}:
-      value: 'prod'
-    ${{ else }}:
-      value: 'test'
-  - group: "ACR details"
 stages:
   - stage: 'Build'
     displayName: 'Build the application'
@@ -45,14 +38,18 @@ stages:
               pip install pytest pytest-azurepipelines
               export PYTHONPATH="./app" && python -m pytest
             displayName: 'pytest'
-          - task: Docker@2
+          - task: ArchiveFiles@2
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            displayName: "Archive files"
+            inputs:
+              rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
+              includeRootFolder: false
+              archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+          - task: PublishBuildArtifacts@1
             condition: ne(variables['Build.SourceBranchName'], 'merge')
             inputs:
-              containerRegistry: 'lpgregistry ACR'
-              repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'
-              command: 'buildAndPush'
-              Dockerfile: '**/Dockerfile'
-              tags: '$(Build.SourceBranchName)'
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+              artifactName: drop
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -66,9 +63,12 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: AzureFunctionAppContainer@1
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
                     appName: 'csl-jobs-int'
-                    imageName: $(acr_url)/csl-jobs/${{ variables.acr_repo_suffix }}:$(Build.SourceBranchName)
-                    appSettings: '-DOCKER_REGISTRY_SERVER_URL https://$(acr_url) -DOCKER_REGISTRY_SERVER_USERNAME $(acr_username) -DOCKER_REGISTRY_SERVER_PASSWORD $(acr_password)'
+                    package: '$(Pipeline.Workspace)/drop/*.zip'
+                    deploymentMethod: 'auto'

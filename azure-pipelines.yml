@@ -39,15 +39,17 @@ stages:
               export PYTHONPATH="./app" && python -m pytest
             displayName: 'pytest'
           - task: ArchiveFiles@2
-            displayName: "Archive files"
             inputs:
-              rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
-              includeRootFolder: false
-              archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)/azurefunction'
+              includeRootFolder: true
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              replaceExistingArchive: true
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
-              artifactName: drop
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -63,11 +65,10 @@ stages:
               steps:
                 - download: current
                   artifact: drop
-                - task: AzureFunctionApp@2
+                - task: AzureFunctionApp@1
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
                     runtimeStack: PYTHON|3.9
-                    package: '$(Pipeline.Workspace)/drop/*.zip'
-                    deploymentMethod: 'zipDeploy'
+                    package: '$(System.DefaultWorkingDirectory)/azurefunction'

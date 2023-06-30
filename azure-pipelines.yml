@@ -46,7 +46,7 @@ stages:
               export PYTHONPATH="./app" && python -m pytest
             displayName: 'pytest'
           - task: Docker@2
-            condition: ne(variables['Build.SourceBranch'], 'merge'))
+            condition: ne(variables['Build.SourceBranch'], 'merge')
             inputs:
               containerRegistry: 'lpgregistry ACR'
               repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'

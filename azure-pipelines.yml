@@ -32,7 +32,7 @@ stages:
             displayName: 'Find dead code'
           - script: |
               python -m pip install --upgrade pip
-              pip install --target="./.python_packages/lib/python3.9/site-packages" -r ./requirements.txt
+              pip install -r requirements.txt
             displayName: 'Install dependencies'
           - script: |
               pip install pytest pytest-azurepipelines
@@ -45,6 +45,9 @@ stages:
               rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
               includeRootFolder: false
               archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+          - bash: |
+              pip install --target="./.python_packages/lib/python3.9/site-packages" -r ./requirements.txt
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
           - task: PublishBuildArtifacts@1
             condition: ne(variables['Build.SourceBranchName'], 'merge')
             inputs:

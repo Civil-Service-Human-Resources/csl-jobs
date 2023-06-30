@@ -63,8 +63,15 @@ stages:
           runOnce:
             deploy:
               steps:
-                - download: current
-                  artifact: drop
+                - task: DownloadBuildArtifacts@1
+                  inputs:
+                    buildType: 'specific'
+                    pipeline: current
+                    buildVersionToDownload: latest
+                    downloadType: single
+                    downloadPath: '$(System.ArtifactsDirectory)'
+                - script: |
+                    dir
                 - task: AzureFunctionApp@1
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'

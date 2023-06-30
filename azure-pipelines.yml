@@ -71,4 +71,4 @@ stages:
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
                     runtimeStack: PYTHON|3.9
-                    package: '$(System.DefaultWorkingDirectory)/azurefunction'
+                    package: '$(System.DefaultWorkingDirectory)'

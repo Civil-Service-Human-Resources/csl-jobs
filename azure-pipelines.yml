@@ -64,10 +64,12 @@ stages:
           runOnce:
             deploy:
               steps:
+                - download: current
+                  artifact: $(appArtifact)
                 - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
-                    package: $(System.DefaultWorkingDirectory)/$(appArtifact)/*.zip
+                    package: '$(Pipeline.Workspace)/$(appArtifact)/*.zip'
                     deploymentMethod: 'auto'

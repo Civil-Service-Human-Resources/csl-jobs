@@ -9,9 +9,6 @@ trigger:
     include:
       - '*'
 
-variables:
-  appArtifact: 'appArtifact'
-
 stages:
   - stage: 'Build'
     displayName: 'Build the application'
@@ -50,7 +47,7 @@ stages:
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
-              artifactName: $(appArtifact)
+              artifactName: drop
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -64,10 +61,12 @@ stages:
           runOnce:
             deploy:
               steps:
+                - download: current
+                  artifact: drop
                 - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
-                    package: $(System.DefaultWorkingDirectory)/$(appArtifact)/*.zip
+                    package: '$(Pipeline.Workspace)/drop/*.zip'
                     deploymentMethod: 'auto'

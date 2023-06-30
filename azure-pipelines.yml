@@ -9,6 +9,13 @@ trigger:
     include:
       - '*'
 
+variables:
+  - name: acr_repo_suffix
+    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags') }}:
+      value: 'prod'
+    ${{ else }}:
+      value: 'test'
+  - group: "ACR details"
 stages:
   - stage: 'Build'
     displayName: 'Build the application'
@@ -38,18 +45,13 @@ stages:
               pip install pytest pytest-azurepipelines
               export PYTHONPATH="./app" && python -m pytest
             displayName: 'pytest'
-          - task: ArchiveFiles@2
+          - task: Docker@2
             inputs:
-              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
-              includeRootFolder: true
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-              replaceExistingArchive: true
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'drop'
-              publishLocation: 'Container'
+              containerRegistry: 'lpgregistry ACR'
+              repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'
+              command: 'buildAndPush'
+              Dockerfile: '**/Dockerfile'
+              tags: '$(Build.SourceBranchName)'
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -63,20 +65,9 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: DownloadBuildArtifacts@1
-                  inputs:
-                    project: current
-                    buildType: 'specific'
-                    pipeline: current
-                    buildVersionToDownload: latest
-                    downloadType: single
-                    downloadPath: '$(System.ArtifactsDirectory)'
-                - script: |
-                    dir
-                - task: AzureFunctionApp@1
+                - task: AzureFunctionAppContainer@1
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
-                    appType: functionAppLinux
                     appName: 'csl-jobs-int'
-                    runtimeStack: PYTHON|3.9
-                    package: '$(System.DefaultWorkingDirectory)'
+                    imageName: $(acr_url)/csl-jobs/${{ variables.acr_repo_suffix }}:$(Build.SourceBranchName)
+                    appSettings: '-DOCKER_REGISTRY_SERVER_URL https://$(acr_url) -DOCKER_REGISTRY_SERVER_USERNAME $(acr_username) -DOCKER_REGISTRY_SERVER_PASSWORD $(acr_password)'

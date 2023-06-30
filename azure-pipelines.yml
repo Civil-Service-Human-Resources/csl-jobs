@@ -70,4 +70,4 @@ stages:
                     appName: 'csl-jobs-int'
                     runtimeStack: PYTHON|3.9
                     package: '$(Pipeline.Workspace)/drop/*.zip'
-                    deploymentMethod: 'auto'
+                    deploymentMethod: 'zipDeploy'

@@ -55,7 +55,7 @@ stages:
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], "merge"))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'merge'))
     jobs:
       - deployment: Deploy
         pool:

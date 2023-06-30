@@ -71,4 +71,4 @@ stages:
                     appType: functionAppLinux
                     appName: 'csl-jobs-int'
                     package: '$(Pipeline.Workspace)/drop/*.zip'
-                    deploymentMethod: 'auto'
+                    deploymentMethod: 'zipDeploy'

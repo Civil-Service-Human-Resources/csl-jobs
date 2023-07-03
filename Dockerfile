@@ -2,6 +2,11 @@
 # FROM mcr.microsoft.com/azure-functions/python:4-python3.9-appservice
 FROM mcr.microsoft.com/azure-functions/python:4-python3.9
 
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y gcc default-libmysqlclient-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /home/site/wwwroot
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \

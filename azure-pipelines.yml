@@ -73,4 +73,4 @@ stages:
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
                     imageName: $(acr_url)/csl-jobs/${{ variables.acr_repo_suffix }}:$(Build.SourceBranchName)
-                    appName: 'csl-jobs-int'
+                    appName: 'csl-jobs-integration'

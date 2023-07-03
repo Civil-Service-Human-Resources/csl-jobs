@@ -67,8 +67,6 @@ stages:
           runOnce:
             deploy:
               steps:
-                - download: current
-                  artifact: drop
                 - task: AzureFunctionAppContainer@1
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'

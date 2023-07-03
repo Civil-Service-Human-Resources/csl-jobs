@@ -15,8 +15,4 @@ ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
 
-COPY ./function_app.py .
-COPY ./timer_blueprints.py .
-COPY ./host.json .
-RUN mkdir -p app
-COPY ./app app
+COPY . .

@@ -9,6 +9,14 @@ trigger:
     include:
       - '*'
 
+variables:
+  - name: acr_repo_suffix
+    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags') }}:
+      value: 'prod'
+    ${{ else }}:
+      value: 'test'
+  - group: 'ACR details'
+
 stages:
   - stage: 'Build'
     displayName: 'Build the application'
@@ -38,21 +46,14 @@ stages:
               pip install pytest pytest-azurepipelines
               export PYTHONPATH="./app" && python -m pytest
             displayName: 'pytest'
-          - task: ArchiveFiles@2
-            condition: ne(variables['Build.SourceBranchName'], 'merge')
-            displayName: "Archive files"
-            inputs:
-              rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
-              includeRootFolder: false
-              archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
-          - bash: |
-              pip install --target="./.python_packages/lib/python3.9/site-packages" -r ./requirements.txt
-            condition: ne(variables['Build.SourceBranchName'], 'merge')
-          - task: PublishBuildArtifacts@1
+          - task: Docker@2
             condition: ne(variables['Build.SourceBranchName'], 'merge')
             inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
-              artifactName: drop
+              containerRegistry: 'lpgregistry ACR'
+              repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'
+              command: 'buildAndPush'
+              Dockerfile: '**/Dockerfile'
+              tags: '$(Build.SourceBranchName)'
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -68,11 +69,8 @@ stages:
               steps:
                 - download: current
                   artifact: drop
-                - task: AzureFunctionApp@2
+                - task: AzureFunctionAppContainer@1
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
-                    appType: functionAppLinux
+                    imageName: $(acr_url)/csl-jobs/${{ variables.acr_repo_suffix }}:$(Build.SourceBranchName)
                     appName: 'csl-jobs-int'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
-                    runtimeStack: PYTHON|3.9
-                    deploymentMethod: 'zipDeploy'

@@ -44,7 +44,7 @@ stages:
               customCommand: 'run test'
             displayName: 'Test'
           - task: Docker@2
-            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
             inputs:
               containerRegistry: 'lpgregistry ACR'
               repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'

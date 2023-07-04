@@ -1,5 +1,7 @@
 import * as path from 'path'
 import * as dotenv from 'dotenv'
+import logNode = require('log-node')
+logNode()
 dotenv.config()
 const env = process.env
 
@@ -16,4 +18,4 @@ export const DELETE_TOKEN_BATCH_SIZE = parseInt(env.DELETE_TOKEN_BATCH_SIZE ?? '
 export const SLACK_API_TOKEN = env.SLACK_API_TOKEN
 export const SLACK_CHANNEL_NOTIFICATION_ID = env.SLACK_CHANNEL_NOTIFICATION_ID
 
-export const LOGGING_LEVEL = env.LOGGING_LEVEL ?? 'INFO'
+export const LOG_LEVEL = env.LOG_LEVEL ?? 'INFO'

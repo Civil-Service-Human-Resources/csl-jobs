@@ -9,5 +9,5 @@ WORKDIR /home/site/wwwroot
 
 COPY ./package.json .
 RUN npm install
-COPY ./dist .
+COPY ./dist ./dist
 COPY ./host.json .

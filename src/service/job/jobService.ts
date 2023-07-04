@@ -16,6 +16,7 @@ export const runJob = async (opts: jobOpts): Promise<void> => {
     const errorMsg = e as string
     logger.error(`Exception running job ${opts.name}: ${errorMsg}`)
     await notificationClient.notify(`Job '${opts.name}' FAILED.`)
+    throw e
   }
   await notificationClient.notify(`Job '${opts.name}' ran successfully`)
 }

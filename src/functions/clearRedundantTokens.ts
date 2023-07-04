@@ -12,5 +12,5 @@ export async function clearRedundantTokens (
 app.timer('clearRedundantTokens', {
   schedule: REDUNDANT_TOKEN_CRON,
   handler: clearRedundantTokens,
-  runOnStartup: true
+  runOnStartup: false
 })

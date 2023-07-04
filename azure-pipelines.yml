@@ -28,7 +28,7 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '18.0'
+              versionSpec: '18'
             displayName: 'Install Node 18'
           - task: Npm@1
             inputs:

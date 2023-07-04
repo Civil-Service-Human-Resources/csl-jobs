@@ -1,4 +1,0 @@
-python-dotenv==1.0.0
-SQLAlchemy==2.0.7
-mysqlclient==2.2.0
-opencensus-ext-azure==1.1.9

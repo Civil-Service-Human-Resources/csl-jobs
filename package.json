@@ -1,0 +1,43 @@
+{
+  "name": "csl_jobs",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rimraf dist",
+    "lint": "eslint src/**",
+    "prestart": "npm run clean && npm run build && npm run resources",
+    "resources": "copyfiles src/resources/**.* dist",
+    "start": "func start",
+    "test": "ts-mocha --paths -p ./tsconfig.json --timeout 10000 --exit \"src/**/*.spec.ts\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0-alpha.7",
+    "@slack/web-api": "^6.8.1",
+    "dotenv": "^16.3.1",
+    "log4js": "^6.9.1",
+    "mysql2": "^3.4.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.x",
+    "@types/sinon": "^10.0.15",
+    "@types/sinon-chai": "^3.2.9",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "chai": "^4.3.7",
+    "copyfiles": "^2.4.1",
+    "eslint": "^8.44.0",
+    "eslint-config-standard-with-typescript": "^36.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "rimraf": "^5.0.0",
+    "sinon": "^15.2.0",
+    "sinon-chai": "^3.7.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.1.6"
+  },
+  "main": "dist/src/functions/*.js"
+}

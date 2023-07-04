@@ -26,26 +26,23 @@ stages:
         pool:
           vmImage: ubuntu-latest
         steps:
-          - task: UsePythonVersion@0
+          - task: NodeTool@0
             inputs:
-              versionSpec: '3.9'
-            displayName: 'Install Python 3.9'
-          - script: |
-              python -m pip install flake8
-              flake8 app test
-            displayName: 'Lint code'
-          - script: |
-              python -m pip install vulture
-              vulture app test
-            displayName: 'Find dead code'
-          - script: |
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            displayName: 'Install dependencies'
-          - script: |
-              pip install pytest pytest-azurepipelines
-              export PYTHONPATH="./app" && python -m pytest
-            displayName: 'pytest'
+              versionSpec: '18.0'
+            displayName: 'Install Node 18'
+          - task: Npm@1
+            inputs:
+              command: 'install'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run lint'
+            displayName: 'Lint'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run test'
+            displayName: 'Test'
           - task: Docker@2
             condition: ne(variables['Build.SourceBranchName'], 'merge')
             inputs:

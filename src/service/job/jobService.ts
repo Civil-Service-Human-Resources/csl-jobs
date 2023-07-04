@@ -1,0 +1,21 @@
+import { logger } from '../../middleware/logging'
+import { getNotificationClient } from '../notification/notifications'
+
+const notificationClient = getNotificationClient()
+
+interface jobOpts {
+  name: string
+  jobFunc: () => Promise<void>
+}
+
+export const runJob = async (opts: jobOpts): Promise<void> => {
+  await notificationClient.notify(`Starting job '${opts.name}'`)
+  try {
+    await opts.jobFunc()
+  } catch (e) {
+    const errorMsg = e as string
+    logger.error(`Exception running job ${opts.name}: ${errorMsg}`)
+    await notificationClient.notify(`Job '${opts.name}' FAILED.`)
+  }
+  await notificationClient.notify(`Job '${opts.name}' ran successfully`)
+}

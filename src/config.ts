@@ -1,8 +1,8 @@
 import * as path from 'path'
 import * as dotenv from 'dotenv'
 import logNode = require('log-node')
-logNode()
 dotenv.config()
+logNode()
 const env = process.env
 
 export const DATABASE_SERVER = env.DATABASE_SERVER

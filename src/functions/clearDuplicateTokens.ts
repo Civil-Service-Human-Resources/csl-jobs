@@ -1,5 +1,5 @@
 import { app, type InvocationContext, type Timer } from '@azure/functions'
-import { DUPLICATE_TOKEN_CRON } from '../config'
+import { DUPLICATE_TOKEN_CRON, DUPLICATE_TOKEN_RUN_ON_STARTUP } from '../config'
 import * as identity from '../service/identity'
 
 export async function clearDuplicateTokens (
@@ -13,5 +13,5 @@ export async function clearDuplicateTokens (
 app.timer('clearDuplicateTokens', {
   schedule: DUPLICATE_TOKEN_CRON,
   handler: clearDuplicateTokens,
-  runOnStartup: false
+  runOnStartup: DUPLICATE_TOKEN_RUN_ON_STARTUP
 })

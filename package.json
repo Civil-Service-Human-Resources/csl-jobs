@@ -6,7 +6,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rimraf dist",
-    "lint": "eslint src/**",
+    "lint": "eslint \"**/*.{ts,tsx}\"",
     "prestart": "npm run clean && npm run build && npm run resources",
     "resources": "copyfiles src/resources/**.* dist",
     "start": "func start",

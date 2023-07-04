@@ -43,6 +43,11 @@ stages:
               command: 'custom'
               customCommand: 'run test'
             displayName: 'Test'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run prestart'
+            displayName: 'Build'
           - task: Docker@2
             condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
             inputs:

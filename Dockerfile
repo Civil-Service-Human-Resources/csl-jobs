@@ -7,7 +7,7 @@ ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
 
 WORKDIR /home/site/wwwroot
 
-COPY package.json .
+COPY ./package.json .
 RUN npm install
-COPY dist .
-COPY host.json .
+COPY ./dist .
+COPY ./host.json .

@@ -7,10 +7,13 @@ export const clearDuplicateTokens = async (): Promise<void> => {
     name: 'Clear duplicate tokens',
     jobFunc: async () => {
       const duplicates = await identityDB.getDuplicateTokens()
-      log.info(duplicates)
+      log.info(`Found ${duplicates.length} duplicate tokens`)
       for (const duplicate of duplicates) {
         log.info(`deleting dupliate '${duplicate.authentication_id}'`)
         await identityDB.deactivateToken(duplicate.authentication_id)
+      }
+      return {
+        text: `Deactivated ${duplicates.length} duplicate tokens`
       }
     }
   })
@@ -45,6 +48,9 @@ export const clearRedundantTokens = async (): Promise<void> => {
       if (validUserTokens > 0) {
         log.info('Deleting valid user tokens')
         await identityDB.deleteValidTokens(validUserTokens)
+      }
+      return {
+        text: `Deleted ${totalInvalidTokens} invalid tokens and ${validUserTokens} valid tokens`
       }
     }
   })

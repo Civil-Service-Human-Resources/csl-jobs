@@ -3,20 +3,25 @@ import { NOTIFICATION_LEVEL, getNotificationClient } from '../notification/notif
 
 const notificationClient = getNotificationClient()
 
-interface jobOpts {
-  name: string
-  jobFunc: () => Promise<void>
+interface JobResult {
+  text: string
 }
 
-export const runJob = async (opts: jobOpts): Promise<void> => {
+interface jobOpts {
+  name: string
+  jobFunc: () => Promise<JobResult>
+}
+
+export const runJob = async (opts: jobOpts): Promise<JobResult> => {
   await notificationClient.notify(`Starting job '${opts.name}'`, NOTIFICATION_LEVEL.ALL)
   try {
-    await opts.jobFunc()
+    const res = await opts.jobFunc()
+    await notificationClient.notify(`Job '${opts.name}' ran successfully with result message '${res.text}'`, NOTIFICATION_LEVEL.ALL)
+    return res
   } catch (e) {
     const errorMsg = e as string
     log.error(`Exception running job ${opts.name}: ${errorMsg}`)
     await notificationClient.notify(`Job '${opts.name}' FAILED.`, NOTIFICATION_LEVEL.ERROR)
     throw e
   }
-  await notificationClient.notify(`Job '${opts.name}' ran successfully`, NOTIFICATION_LEVEL.ALL)
 }

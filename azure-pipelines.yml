@@ -48,14 +48,18 @@ stages:
               command: 'custom'
               customCommand: 'run prestart'
             displayName: 'Build'
-          - task: Docker@2
-            condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+          - task: ArchiveFiles@2
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            displayName: "Archive files"
             inputs:
-              containerRegistry: 'lpgregistry ACR'
-              repository: 'csl-jobs/${{ variables.acr_repo_suffix }}'
-              command: 'buildAndPush'
-              Dockerfile: '**/Dockerfile'
-              tags: '$(Build.SourceBranchName)'
+              rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
+              includeRootFolder: false
+              archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+          - task: PublishBuildArtifacts@1
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+              artifactName: drop
   - stage: 'Integration'
     displayName: 'Deploy to integration environment'
     dependsOn: 'Build'
@@ -69,8 +73,12 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: AzureFunctionAppContainer@1
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
-                    imageName: $(acr_url)/csl-jobs/${{ variables.acr_repo_suffix }}:$(Build.SourceBranchName)
-                    appName: 'csl-jobs-integration'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-int'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'

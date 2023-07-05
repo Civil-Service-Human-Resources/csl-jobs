@@ -1,6 +1,7 @@
 import * as path from 'path'
 import * as dotenv from 'dotenv'
 import logNode = require('log-node')
+import { NOTIFICATION_LEVEL } from './service/notification/notifications'
 dotenv.config()
 logNode()
 const env = process.env
@@ -20,5 +21,6 @@ export const DUPLICATE_TOKEN_RUN_ON_STARTUP: boolean = JSON.parse(env.DUPLICATE_
 
 export const SLACK_API_TOKEN = env.SLACK_API_TOKEN
 export const SLACK_CHANNEL_NOTIFICATION_ID = env.SLACK_CHANNEL_NOTIFICATION_ID
+export const GLOBAL_NOTIFICATION_LEVEL: NOTIFICATION_LEVEL = NOTIFICATION_LEVEL[env.GLOBAL_NOTIFICATION_LEVEL ?? NOTIFICATION_LEVEL.ERROR]
 
 export const LOG_LEVEL = env.LOG_LEVEL ?? 'INFO'

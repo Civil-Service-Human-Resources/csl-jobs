@@ -1,20 +1,27 @@
-import { SLACK_API_TOKEN, SLACK_CHANNEL_NOTIFICATION_ID } from '../../config'
+import { SLACK_API_TOKEN, SLACK_CHANNEL_NOTIFICATION_ID, GLOBAL_NOTIFICATION_LEVEL } from '../../config'
 import { type Notifier } from './Notifier'
 import { WebClient } from '@slack/web-api'
 import { SlackNotifier } from './SlackNotifier'
 import log = require('log')
 
-export class NotificationClient {
-  constructor (private readonly notifiers: Notifier[]) {}
+export enum NOTIFICATION_LEVEL {
+  ERROR = 1,
+  ALL = 0
+}
 
-  notify = async (message: string): Promise<void> => {
-    for (const notifier of this.notifiers) {
-      try {
-        log.debug(`Notifying ${notifier.getName()} with message: '${message}'`)
-        await notifier.notify(message)
-      } catch (e) {
-        const exMessage = e as string
-        log.error(`Error encountered while making notification to ${notifier.getName()} notifier. Error: ${exMessage}`)
+export class NotificationClient {
+  constructor (private readonly notifiers: Notifier[], private readonly notificationLevel: NOTIFICATION_LEVEL) {}
+
+  notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
+    if (level.valueOf() >= this.notificationLevel.valueOf()) {
+      for (const notifier of this.notifiers) {
+        try {
+          log.debug(`Notifying ${notifier.getName()} with message: '${message}'`)
+          await notifier.notify(message)
+        } catch (e) {
+          const exMessage = e as string
+          log.error(`Error encountered while making notification to ${notifier.getName()} notifier. Error: ${exMessage}`)
+        }
       }
     }
   }
@@ -44,5 +51,5 @@ const getNotifiers = (): Notifier[] => {
 
 export const getNotificationClient = (): NotificationClient => {
   const notifiers = getNotifiers()
-  return new NotificationClient(notifiers)
+  return new NotificationClient(notifiers, GLOBAL_NOTIFICATION_LEVEL)
 }

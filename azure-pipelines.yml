@@ -79,6 +79,6 @@ stages:
                   inputs:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
-                    appName: 'csl-jobs-int'
+                    appName: 'csl-jobs-integration'
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     deploymentMethod: 'auto'

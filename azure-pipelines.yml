@@ -135,7 +135,7 @@ stages:
                   artifact: drop
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: 'PrincipalConnectionStaging'
+                    azureSubscription: 'PrincipalConnectionProduction'
                     appType: functionAppLinux
                     appName: 'csl-jobs-prod'
                     package: '$(Pipeline.Workspace)/**/*.zip'

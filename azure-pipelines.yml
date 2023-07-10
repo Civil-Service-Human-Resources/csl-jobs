@@ -9,14 +9,6 @@ trigger:
     include:
       - '*'
 
-variables:
-  - name: acr_repo_suffix
-    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags') }}:
-      value: 'prod'
-    ${{ else }}:
-      value: 'test'
-  - group: 'ACR details'
-
 stages:
   - stage: 'Build'
     displayName: 'Build the application'
@@ -80,5 +72,71 @@ stages:
                     azureSubscription: 'PrincipalConnectionStaging'
                     appType: functionAppLinux
                     appName: 'csl-jobs-integration'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Staging'
+    displayName: 'Deploy to staging environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: staging
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-staging'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Performance'
+    displayName: 'Deploy to performance environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: performance
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-perf'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Production'
+    displayName: 'Deploy to production environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-prod'
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     deploymentMethod: 'auto'

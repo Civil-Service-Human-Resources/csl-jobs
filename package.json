@@ -10,7 +10,7 @@
     "prestart": "npm run clean && npm run build && npm run resources",
     "resources": "copyfiles src/resources/**.* dist",
     "start": "func start",
-    "test": "ts-mocha --paths -p ./tsconfig.json --timeout 10000 --exit \"src/**/*.spec.ts\""
+    "test": "ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --exit \"src/**/*.spec.ts\""
   },
   "dependencies": {
     "@azure/functions": "^4.0.0-alpha.7",
@@ -35,6 +35,7 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.2.0",
+    "mocha-junit-reporter": "^2.2.0",
     "rimraf": "^5.0.0",
     "sinon": "^15.2.0",
     "sinon-chai": "^3.7.0",

@@ -1,5 +1,5 @@
 import { app, type InvocationContext, type Timer } from '@azure/functions'
-import { REDUNDANT_TOKEN_CRON, REDUNDANT_TOKEN_RUN_ON_STARUP } from '../config'
+import { REDUNDANT_TOKEN_CRON, REDUNDANT_TOKEN_RUN_ON_STARTUP } from '../config'
 import * as identity from '../service/identity'
 
 export async function clearRedundantTokens (
@@ -12,5 +12,5 @@ export async function clearRedundantTokens (
 app.timer('clearRedundantTokens', {
   schedule: REDUNDANT_TOKEN_CRON,
   handler: clearRedundantTokens,
-  runOnStartup: REDUNDANT_TOKEN_RUN_ON_STARUP
+  runOnStartup: REDUNDANT_TOKEN_RUN_ON_STARTUP
 })

@@ -13,7 +13,7 @@ export const DATABASE_ENABLE_DEBUG: boolean = JSON.parse(env.DATABASE_ENABLE_DEB
 export const SSL_CERT = env.SSL_CERT ?? path.resolve(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
 
 export const REDUNDANT_TOKEN_CRON = env.REDUNDANT_TOKEN_CRON ?? '0 0 1 * * 0'
-export const REDUNDANT_TOKEN_RUN_ON_STARUP: boolean = JSON.parse(env.REDUNDANT_TOKEN_RUN_ON_STARUP ?? 'false')
+export const REDUNDANT_TOKEN_RUN_ON_STARTUP: boolean = JSON.parse(env.REDUNDANT_TOKEN_RUN_ON_STARTUP ?? 'false')
 export const DELETE_TOKEN_BATCH_SIZE = parseInt(env.DELETE_TOKEN_BATCH_SIZE ?? '1000')
 
 export const DUPLICATE_TOKEN_CRON = env.DUPLICATE_TOKEN_CRON ?? '0 */15 * * * *'

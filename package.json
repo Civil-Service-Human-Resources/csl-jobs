@@ -10,6 +10,7 @@
     "prestart": "npm run clean && npm run build && npm run resources",
     "resources": "copyfiles src/resources/**.* dist",
     "start": "func start",
+	"debug-local": "ts-node src/start.ts ",
     "test": "nyc ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --exit \"src/**/*.spec.ts\""
   },
   "nyc": {
@@ -47,6 +48,7 @@
     "sinon": "^15.2.0",
     "sinon-chai": "^3.7.0",
     "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   },
   "main": "dist/src/functions/*.js"

@@ -40,6 +40,10 @@ stages:
               testRunner: JUnit
               testResultsFiles: '**/test-results.xml'
             displayName: 'Test'
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
           - task: Npm@1
             inputs:
               command: 'custom'

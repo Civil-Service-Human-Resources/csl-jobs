@@ -10,7 +10,12 @@
     "prestart": "npm run clean && npm run build && npm run resources",
     "resources": "copyfiles src/resources/**.* dist",
     "start": "func start",
-    "test": "ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --exit \"src/**/*.spec.ts\""
+    "test": "nyc ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --exit \"src/**/*.spec.ts\""
+  },
+  "nyc": {
+    "exclude": [
+      "**/*.spec.ts"
+    ]
   },
   "dependencies": {
     "@azure/functions": "^4.0.0-alpha.7",
@@ -21,6 +26,7 @@
     "mysql2": "^3.4.3"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/log": "^6.3.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.x",
@@ -36,6 +42,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.0",
+    "nyc": "^15.1.0",
     "rimraf": "^5.0.0",
     "sinon": "^15.2.0",
     "sinon-chai": "^3.7.0",

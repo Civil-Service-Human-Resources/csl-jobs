@@ -8,6 +8,8 @@ Read more about Azure Functions here: https://learn.microsoft.com/en-us/azure/az
 
 To run this project locally, you'll require:
 - Node 18
+
+Additionally, to run the Azure Functions local runtime:
 - Visual Studio Code
 - Azurite
 - VSCode Azure Functions extension > 1.10.4
@@ -15,10 +17,24 @@ To run this project locally, you'll require:
 
 ## Running
 
-### Azurite
+### Azure Functions runtime
+
+#### Azurite
 
 To run Azurite locally, run the `Azurite start` command in the command pallette in VSCode.
 
-### Debug
+#### Debug
 
-The app can be debugged using the built-in debugger in VSCode.
+The app can be debugged using the built-in debugger in VSCode after all of the relevant extensions have been installed.
+
+> IMPORTANT: Cron jobs will not run locally on startup unless a specific environment variable is set (per job)
+
+### Local script
+
+The jobs within the application can also be run locally using the `start.ts` script.
+
+Use the npm run debug-local command along with the name of the Function you’d like to test. For example, to run the clearDuplicateTokens function locally:
+
+`npm run debug-local -- --functionName clearDuplicateTokens`
+
+This command will invoke the ts-node package to directly run the start.ts typescript file.

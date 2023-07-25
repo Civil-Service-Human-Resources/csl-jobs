@@ -1,0 +1,151 @@
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+    - feature/*
+    - release/v*
+  tags:
+    include:
+      - '*'
+
+stages:
+  - stage: 'Build'
+    displayName: 'Build the application'
+    jobs:
+      - job: 'Build'
+        displayName: 'Build'
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18'
+            displayName: 'Install Node 18'
+          - task: Npm@1
+            inputs:
+              command: 'install'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run lint'
+            displayName: 'Lint'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run test'
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testRunner: JUnit
+              testResultsFiles: '**/test-results.xml'
+            displayName: 'Test'
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              customCommand: 'run prestart'
+            displayName: 'Build'
+          - task: ArchiveFiles@2
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            displayName: "Archive files"
+            inputs:
+              rootFolderOrFile: "$(System.DefaultWorkingDirectory)"
+              includeRootFolder: false
+              archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+          - task: PublishBuildArtifacts@1
+            condition: ne(variables['Build.SourceBranchName'], 'merge')
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+              artifactName: drop
+  - stage: 'Integration'
+    displayName: 'Deploy to integration environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: integration
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-integration'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Staging'
+    displayName: 'Deploy to staging environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: staging
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-staging'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Performance'
+    displayName: 'Deploy to performance environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: performance
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionStaging'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-perf'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'
+  - stage: 'Production'
+    displayName: 'Deploy to production environment'
+    dependsOn: 'Build'
+    condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'merge'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+    jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'PrincipalConnectionProduction'
+                    appType: functionAppLinux
+                    appName: 'csl-jobs-prod'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    deploymentMethod: 'auto'

@@ -1,0 +1,8 @@
+extends: "@istanbuljs/nyc-config-typescript"
+
+reporter:
+  - cobertura
+  # those 2 are for commandline outputs
+  - text
+  - text-summary
+report-dir: coverage

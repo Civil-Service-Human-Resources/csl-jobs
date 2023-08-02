@@ -1,9 +1,11 @@
 import * as identity from './service/identity'
+import * as MI from './service/MI'
 import { parseArgs } from 'node:util'
 
 const localJobs: Map<string, () => Promise<void>> = new Map<string, () => Promise<void>>([
   ['clearDuplicateTokens', identity.clearDuplicateTokens],
-  ['clearRedundantTokens', identity.clearRedundantTokens]
+  ['clearRedundantTokens', identity.clearRedundantTokens],
+  ['generateCourseCompletions', MI.generateCourseCompletions]
 ])
 
 const args = parseArgs({
@@ -30,6 +32,5 @@ if (job === undefined) {
 job()
   .then(() => { process.exit() })
   .catch((e) => {
-    const eMsg = e as string
-    console.log(`Error running job: ${eMsg}`)
+    throw e
   })

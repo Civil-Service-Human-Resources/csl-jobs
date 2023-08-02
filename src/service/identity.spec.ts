@@ -11,10 +11,10 @@ describe('Identity servce tests', () => {
         authentication_id: 'auth_id',
         client_id: 'client_id'
       }
-      const deact = sandbox.stub(identityDB, 'deactivateToken')
+      const deact = sandbox.stub(identityDB, 'deactivateTokens')
       sandbox.stub(identityDB, 'getDuplicateTokens').resolves([tokenRow])
       await identityService.clearDuplicateTokens()
-      assert.isTrue(deact.calledOnceWith('auth_id'))
+      assert.isTrue(deact.calledOnceWith(['auth_id']))
     })
   })
   describe('Test clear redundant tokens', () => {

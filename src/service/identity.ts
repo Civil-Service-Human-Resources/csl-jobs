@@ -7,10 +7,13 @@ export const clearDuplicateTokens = async (): Promise<void> => {
     name: 'Clear duplicate tokens',
     jobFunc: async () => {
       const duplicates = await identityDB.getDuplicateTokens()
-      log.info(`Found ${duplicates.length} duplicate tokens`)
-      for (const duplicate of duplicates) {
-        log.info(`deleting dupliate '${duplicate.authentication_id}'`)
-        await identityDB.deactivateToken(duplicate.authentication_id)
+      if (duplicates.length > 0) {
+        log.info(`Found ${duplicates.length} duplicate tokens`)
+        const duplicateIds = duplicates.map(d => d.authentication_id)
+        log.info(`deleting duplicates '${duplicateIds.join(',')}'`)
+        await identityDB.deactivateTokens(duplicateIds)
+      } else {
+        log.info('0 duplicate tokens found')
       }
       return {
         text: `Deactivated ${duplicates.length} duplicate tokens`

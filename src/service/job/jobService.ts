@@ -1,5 +1,6 @@
 import log = require('log')
-import { NOTIFICATION_LEVEL, getNotificationClient } from '../notification/notifications'
+import { getNotificationClient } from '../notification/notifications'
+import { NOTIFICATION_LEVEL } from '../notification/NotificationLevel'
 
 const notificationClient = getNotificationClient()
 

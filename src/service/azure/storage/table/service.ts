@@ -1,23 +1,6 @@
-import { TableClient, TableServiceClient } from '@azure/data-tables'
-import config from '../../../config'
 import log from 'log'
-
-const { azure: { storage } } = config
-
-const getTableClient = async (tableName: string): Promise<TableClient> => {
-  log.debug('Creating table service client')
-  const tableService = TableServiceClient.fromConnectionString(storage.accountConnectionString)
-  log.debug(`Creating table '${tableName}'`)
-  await tableService.createTable(tableName, {
-    requestOptions: {
-      allowInsecureConnection: true
-    }
-  })
-  log.debug(`Creating client for table '${tableName}'`)
-  return TableClient.fromConnectionString(storage.accountConnectionString, storage.table.tableName, {
-    allowInsecureConnection: true
-  })
-}
+import { CustomDate } from '../../../date/CustomDate'
+import { getTableClient } from './connection'
 
 const upsertValueInTable = async (tableName: string, partitionKey: string, rowKey: string, value: string): Promise<void> => {
   log.debug(`Upserting value '${rowKey}' to '${value}' in  partition '${partitionKey}' in table '${tableName}'`)
@@ -39,6 +22,17 @@ const getValueFromTable = async (tableName: string, partitionKey: string, rowKey
     const statusCode = e.statusCode as number
     log.warn(`Error code ${statusCode} encountered when fetching data`)
   }
+}
+
+export const getDateFromTable = async (partitionKey: string, rowKey: string): Promise<CustomDate | undefined> => {
+  log.info('Getting timestamp')
+  const timestamp = await getJobData(partitionKey, rowKey)
+  if (timestamp !== undefined) {
+    const date = new CustomDate(timestamp)
+    date.fixOffset()
+    return date
+  }
+  return undefined
 }
 
 export const getJobData = async (partitionKey: string, rowKey: string): Promise<string | undefined> => {

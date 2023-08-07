@@ -1,9 +1,9 @@
-import * as azureBlobService from '../azure/storage/blob'
+import * as azureBlobService from '../azure/storage/blob/service'
 import { JobsFile } from '../file/models'
 import { getCompletedCourseRecords } from '../../db/shared/database'
 import { objsToCsv } from '../file/csv'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
-import { type UploadResult } from '../azure/storage/blob'
+import { type UploadResult } from '../azure/storage/blob/service'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -34,8 +34,8 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 }
 
 const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimestamp: Date): string => {
-  const replaceRegex = /[-,:,\s]/ig
-  const startFmt = startTimestamp.toISOString().replaceAll(replaceRegex, '_')
-  const endFmt = endTimestamp.toISOString().replaceAll(replaceRegex, '_')
+  const replaceRegex = /[-,:,\s,\\.,/]/ig
+  const startFmt = startTimestamp.toLocaleDateString().replaceAll(replaceRegex, '_')
+  const endFmt = endTimestamp.toLocaleDateString().replaceAll(replaceRegex, '_')
   return `${key}_${startFmt}_to_${endFmt}`
 }

@@ -26,7 +26,7 @@ const config = {
     },
     courseCompletions: {
       cron: env.COURSE_COMPLETIONS_CRON ?? '0 5 0 * * SUN',
-      defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1W',
+      defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1Y',
       notifyTemplate: env.NOTIFY_COURSE_COMPLETION_TEMPLATE ?? '',
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')

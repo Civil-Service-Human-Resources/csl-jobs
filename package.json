@@ -27,6 +27,7 @@
     "archiver-zip-encrypted": "^1.0.11",
     "csv": "^6.3.1",
     "dotenv": "^16.3.1",
+    "iso8601-duration": "^2.1.1",
     "log": "^6.3.1",
     "log-node": "^8.0.3",
     "memorystream": "^0.3.1",

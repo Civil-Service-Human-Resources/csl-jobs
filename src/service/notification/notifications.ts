@@ -3,14 +3,22 @@ import { WebClient } from '@slack/web-api'
 import { SlackNotifier } from './SlackNotifier'
 import log = require('log')
 import config from '../../config'
-import { type NOTIFICATION_LEVEL } from './NotificationLevel'
+import { NOTIFICATION_LEVEL } from './NotificationLevel'
 
 const { notifications: { notificationLevel, slack } } = config
 
 export class NotificationClient {
   constructor (private readonly notifiers: Notifier[], private readonly notificationLevel: NOTIFICATION_LEVEL) {}
 
-  notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
+  infoNotification = async (message: string): Promise<void> => {
+    await this.notify(message, NOTIFICATION_LEVEL.ALL)
+  }
+
+  errorNotification = async (message: string): Promise<void> => {
+    await this.notify(message, NOTIFICATION_LEVEL.ERROR)
+  }
+
+  private readonly notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
     log.info(message)
     if (level.valueOf() >= this.notificationLevel.valueOf()) {
       for (const notifier of this.notifiers) {

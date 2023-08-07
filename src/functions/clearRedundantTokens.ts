@@ -1,6 +1,7 @@
 import { app, type InvocationContext, type Timer } from '@azure/functions'
 import config from '../config'
-import * as identity from '../service/identity'
+import { runJob } from '../service/job/jobService'
+import { JobType } from '../service/job/JobType'
 
 const { jobs: { redundantTokens } } = config
 
@@ -8,7 +9,7 @@ export async function clearRedundantTokens (
   myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
-  await identity.clearRedundantTokens()
+  await runJob(JobType.REDUNDANT_TOKEN)
 }
 
 app.timer('clearRedundantTokens', {

@@ -4,8 +4,10 @@ import { type MIReportPersonalisation, type PasswordPersonalisation } from './pe
 import { GovUkEmailNotification, GovUkNotification } from './GovUkEmailNotification'
 import { type UploadResult } from '../../azure/storage/blob/service'
 import { getNotifier } from './GovUkNotifier'
+import dayjs from 'dayjs'
 
 const { jobs: { courseCompletions } } = config
+const dateFormatTokens = 'DD/MM/YYYY'
 
 const notifications: GovUkEmailNotification[] = [
   new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, courseCompletions.notifyTemplate, courseCompletions.emailRecipients),
@@ -23,8 +25,10 @@ const sendEmail = async (notificationType: GovUkNotification, personalisation: a
 }
 
 export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: Date, uploadResult: UploadResult): Promise<void> => {
+  const fromFmt = dayjs(fromDate).format(dateFormatTokens)
+  const toFmt = dayjs(toDate).format(dateFormatTokens)
   const personalisation: MIReportPersonalisation = {
-    description: `Course completions from ${fromDate.toLocaleDateString()} to ${toDate.toLocaleDateString()}`,
+    description: `Course completions from ${fromFmt} to ${toFmt}`,
     linkExpiryInDays: uploadResult.expiryInDays,
     link: uploadResult.link
   }
@@ -32,8 +36,10 @@ export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: 
 }
 
 export const sendCourseCompletionsPasswordNotification = async (fromDate: Date, toDate: Date, password: string): Promise<void> => {
+  const fromFmt = dayjs(fromDate).format(dateFormatTokens)
+  const toFmt = dayjs(toDate).format(dateFormatTokens)
   const personalisation: PasswordPersonalisation = {
-    description: `Course completions from ${fromDate.toLocaleDateString()} to ${toDate.toLocaleDateString()}`,
+    description: `Course completions from ${fromFmt} to ${toFmt}`,
     password
   }
   await sendEmail(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, personalisation)

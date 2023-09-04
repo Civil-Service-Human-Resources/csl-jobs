@@ -12,7 +12,7 @@ export async function generateCourseCompletions (
   await runJob(JobType.COURSE_COMPLETIONS)
 }
 
-app.timer('clearDuplicateTokens', {
+app.timer('generateCourseCompletions', {
   schedule: cron,
   handler: generateCourseCompletions
 })

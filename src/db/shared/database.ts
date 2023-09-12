@@ -1,7 +1,7 @@
 import { fetchRows } from '../connection'
 import { type ICourseCompletion } from './model'
 
-const getCourseCompletionSQL = (fromDate: string, toDate: string): string => {
+const getCourseCompletionSQL = (): string => {
   return `select
     cr.user_id as user_id,
     cs.full_name as full_name,
@@ -22,11 +22,11 @@ const getCourseCompletionSQL = (fromDate: string, toDate: string): string => {
   join csrs.profession p on cs.profession_id = p.id
   join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
   where state = 'COMPLETED'
-  and last_updated between '${fromDate}' and '${toDate}'
+  and last_updated between ? and ?
   order by last_updated desc, user_id, course_id;`
 }
 
 export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): Promise<ICourseCompletion[]> => {
-  const SQL = getCourseCompletionSQL(fromDate.toISOString(), toDate.toISOString())
-  return await fetchRows<ICourseCompletion>(SQL)
+  const SQL = getCourseCompletionSQL()
+  return await fetchRows<ICourseCompletion>(SQL, [fromDate.toISOString(), toDate.toISOString()])
 }

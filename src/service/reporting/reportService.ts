@@ -21,7 +21,7 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   const completions = await getCompletedCourseRecords(lastSuccessTimestamp, toTimestamp)
   if (completions.length > 0) {
     const fileName = getTimeRangeFileName('course_completions', lastSuccessTimestamp, toTimestamp)
-    const csv = objsToCsv(completions)
+    const csv = await objsToCsv(completions)
     const csvFile = JobsFile.from(`${fileName}.csv`, csv)
     const zipFile = await zipFiles([csvFile], fileName)
     const uploadResult = await uploadFile(zipFile.result)

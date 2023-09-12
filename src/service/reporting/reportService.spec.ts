@@ -42,7 +42,7 @@ describe('Report service tests', () => {
     const stubs: any = {}
     before(() => {
       stubs.getCompletedCourseRecords = sandbox.stub(database, 'getCompletedCourseRecords').resolves([fakeCourseCompletionRow as any])
-      stubs.objsToCsv = sandbox.stub(csv, 'objsToCsv').returns(fakeCsv)
+      stubs.objsToCsv = sandbox.stub(csv, 'objsToCsv').resolves(fakeCsv)
       stubs.zipFiles = sandbox.stub(zip, 'zipFiles').resolves(fakeZipResult)
       stubs.uploadFile = sandbox.stub(azureBlobService, 'uploadFile').resolves(fakeUploadResult)
     })

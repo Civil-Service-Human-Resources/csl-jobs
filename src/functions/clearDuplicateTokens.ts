@@ -1,17 +1,19 @@
 import { app, type InvocationContext, type Timer } from '@azure/functions'
-import { DUPLICATE_TOKEN_CRON, DUPLICATE_TOKEN_RUN_ON_STARTUP } from '../config'
-import * as identity from '../service/identity'
+import config from '../config'
+import { runJob } from '../service/job/jobService'
+import { JobType } from '../service/job/JobType'
+
+const { jobs: { duplicateTokens } } = config
 
 export async function clearDuplicateTokens (
   myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
-  await identity.clearDuplicateTokens()
-  context.log('Timer function processed request.')
+  await runJob(JobType.DUPLICATE_TOKEN)
 }
 
 app.timer('clearDuplicateTokens', {
-  schedule: DUPLICATE_TOKEN_CRON,
+  schedule: duplicateTokens.cron,
   handler: clearDuplicateTokens,
-  runOnStartup: DUPLICATE_TOKEN_RUN_ON_STARTUP
+  runOnStartup: duplicateTokens.runOnStartup
 })

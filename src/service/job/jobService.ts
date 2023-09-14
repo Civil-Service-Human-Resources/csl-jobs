@@ -1,27 +1,37 @@
 import log = require('log')
-import { NOTIFICATION_LEVEL, getNotificationClient } from '../notification/notifications'
+import { getNotificationClient } from '../notification/notifications'
+import { JobType } from './JobType'
+import { type Job } from './Job'
+import { CourseCompletionsJob } from './MI/CourseCompletionsJob'
+import config from '../../config'
+import { ClearRedundantTokensJob } from './identity/ClearRedundantTokensJob'
+import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
 
 const notificationClient = getNotificationClient()
 
-interface JobResult {
+export interface JobResult {
   text: string
 }
 
-interface jobOpts {
-  name: string
-  jobFunc: () => Promise<JobResult>
-}
-
-export const runJob = async (opts: jobOpts): Promise<JobResult> => {
-  await notificationClient.notify(`Starting job '${opts.name}'`, NOTIFICATION_LEVEL.ALL)
-  try {
-    const res = await opts.jobFunc()
-    await notificationClient.notify(`Job '${opts.name}' ran successfully with result message '${res.text}'`, NOTIFICATION_LEVEL.ALL)
-    return res
-  } catch (e) {
-    const errorMsg = e as string
-    log.error(`Exception running job ${opts.name}: ${errorMsg}`)
-    await notificationClient.notify(`Job '${opts.name}' FAILED.`, NOTIFICATION_LEVEL.ERROR)
-    throw e
+export const runJob = async (jobType: JobType): Promise<void> => {
+  let job: Job | undefined
+  switch (jobType) {
+    case JobType.COURSE_COMPLETIONS:
+      job = new CourseCompletionsJob(notificationClient, config.jobs.courseCompletions.defaultFallbackPeriod)
+      break
+    case JobType.REDUNDANT_TOKEN:
+      job = new ClearRedundantTokensJob(notificationClient)
+      break
+    case JobType.DUPLICATE_TOKEN:
+      job = new ClearDuplicateTokensJob(notificationClient)
+      break
+    default:
+      job = undefined
+      break
+  }
+  if (job !== undefined) {
+    await job.execute()
+  } else {
+    log.error(`Failed to execute '${jobType}' job; job does not exist`)
   }
 }

@@ -1,6 +1,6 @@
-import { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
+import type { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
 import { fetchRows } from '../connection'
-import { type ICourseCompletion } from './model'
+import type { ICourseCompletion } from './model'
 
 const getCourseCompletionSQL = (): string => {
   return `select
@@ -32,8 +32,8 @@ export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): P
   return await fetchRows<ICourseCompletion>(SQL, [fromDate.toISOString(), toDate.toISOString()])
 }
 
-export const getOrganisationDomains = async(): Promise<IOrganisationDomain[]> => {
-  let query = `SELECT 
+export const getOrganisationDomains = async (): Promise<IOrganisationDomain[]> => {
+  const query = `SELECT 
       domain, 
       IF(parent_org_name IS NULL, organisation_name, CONCAT(organisation_name, ' | ', parent_org_name)) AS organisation_name, 
       COUNT(domain) AS usages, 
@@ -48,5 +48,5 @@ export const getOrganisationDomains = async(): Promise<IOrganisationDomain[]> =>
     GROUP BY domain, organisation_name
     ORDER BY domain;`
 
-    return await fetchRows<IOrganisationDomain>(query, [])
+  return await fetchRows<IOrganisationDomain>(query, [])
 }

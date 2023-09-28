@@ -5,7 +5,7 @@ import { GovUkEmailNotification, GovUkNotification } from './GovUkEmailNotificat
 import { type UploadResult } from '../../azure/storage/blob/service'
 import { getNotifier } from './GovUkNotifier'
 import dayjs from 'dayjs'
-import { OrgDomainsEmailPersonalisation } from '../../orgDomains/model/emailPersonalisation'
+import type { OrgDomainsEmailPersonalisation } from '../../orgDomains/model/emailPersonalisation'
 
 const { jobs: { courseCompletions, orgDomains } } = config
 const dateFormatTokens = 'DD/MM/YYYY'

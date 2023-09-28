@@ -1,4 +1,4 @@
-export interface OrgDomainsEmailPersonalisation{
+export interface OrgDomainsEmailPersonalisation {
   description: string
   date: string
   link: string

@@ -1,8 +1,7 @@
 import { executeUpdate, fetchCount, fetchRows } from '../connection'
 import config from '../../config'
-import { type IPartialToken } from './model'
-import { IDomain } from '../../service/orgDomains/model/IDomain'
-import { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
+import type { IPartialToken } from './model'
+import type { IDomain } from '../../service/orgDomains/model/IDomain'
 
 const { jobs: { redundantTokens: { deleteBatchSize } } } = config
 
@@ -35,11 +34,10 @@ WHERE authentication_id COLLATE utf8_unicode_ci in (${formattedIdParams}) AND st
 }
 
 export const getAllDomains = async (): Promise<IDomain[]> => {
-  let query = `SELECT DISTINCT(domain) FROM (
+  const query = `SELECT DISTINCT(domain) FROM (
         SELECT SUBSTRING_INDEX(email,'@', -1) AS domain FROM identity.identity
         ) AS domains
       ORDER BY domain;`
-  
   return await fetchRows<IDomain>(query, [])
 }
 

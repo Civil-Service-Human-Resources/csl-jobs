@@ -5,7 +5,8 @@ import { runJob } from './service/job/jobService'
 const localJobs: Map<string, JobType> = new Map<string, JobType>([
   ['clearDuplicateTokens', JobType.DUPLICATE_TOKEN],
   ['clearRedundantTokens', JobType.REDUNDANT_TOKEN],
-  ['generateCourseCompletions', JobType.COURSE_COMPLETIONS]
+  ['generateCourseCompletions', JobType.COURSE_COMPLETIONS],
+  ['orgDomains', JobType.ORG_DOMAINS]
 ])
 
 const args = parseArgs({

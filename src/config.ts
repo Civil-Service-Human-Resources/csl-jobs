@@ -30,6 +30,11 @@ const config = {
       notifyTemplate: env.NOTIFY_COURSE_COMPLETION_TEMPLATE ?? '',
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')
+    },
+    orgDomains: {
+      cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
+      notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',
+      emailRecipients: (env.ORG_DOMAINS_EMAIL_RECIPIENTS ?? '').split(',')
     }
   },
   notifications: {
@@ -44,7 +49,7 @@ const config = {
   },
   azure: {
     storage: {
-      accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',
+      accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://storage:10000/devstoreaccount1;QueueEndpoint=http://storage:10001/devstoreaccount1;TableEndpoint=http://storage:10002/devstoreaccount1;',
       table: {
         tableName: env.AZURE_TABLE_STORAGE_TABLENAME ?? 'jobData'
       },

@@ -6,6 +6,7 @@ import { CourseCompletionsJob } from './MI/CourseCompletionsJob'
 import config from '../../config'
 import { ClearRedundantTokensJob } from './identity/ClearRedundantTokensJob'
 import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
+import { OrgDomainsJob } from './orgDomains/orgDomainsJob'
 
 const notificationClient = getNotificationClient()
 
@@ -24,6 +25,9 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       break
     case JobType.DUPLICATE_TOKEN:
       job = new ClearDuplicateTokensJob(notificationClient)
+      break
+    case JobType.ORG_DOMAINS:
+      job = new OrgDomainsJob(notificationClient)
       break
     default:
       job = undefined

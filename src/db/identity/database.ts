@@ -1,6 +1,8 @@
 import { executeUpdate, fetchCount, fetchRows } from '../connection'
 import config from '../../config'
 import { type IPartialToken } from './model'
+import { IDomain } from '../../service/orgDomains/model/IDomain'
+import { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
 
 const { jobs: { redundantTokens: { deleteBatchSize } } } = config
 
@@ -30,6 +32,15 @@ UPDATE token
 SET status = 1
 WHERE authentication_id COLLATE utf8_unicode_ci in (${formattedIdParams}) AND status COLLATE utf8_unicode_ci = 0;`
   await executeUpdate(sql, authenticationIds, 'identity')
+}
+
+export const getAllDomains = async (): Promise<IDomain[]> => {
+  let query = `SELECT DISTINCT(domain) FROM (
+        SELECT SUBSTRING_INDEX(email,'@', -1) AS domain FROM identity.identity
+        ) AS domains
+      ORDER BY domain;`
+  
+  return await fetchRows<IDomain>(query, [])
 }
 
 const deleteTokens = async (sql: string, tokenCount: number): Promise<void> => {

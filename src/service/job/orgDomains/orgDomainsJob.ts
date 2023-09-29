@@ -32,8 +32,7 @@ export class OrgDomainsJob extends Job {
     log.info('Spreadsheet created.')
 
     log.info('Uploading file ')
-    const uploadResult: UploadResult = await uploadFile('orgdomain-files', new JobsFile(filePath.fileName, readFileSync(filePath.fullPath)))
-
+    const uploadResult: UploadResult = await uploadSpreadsheet(filePath)
     await sendOrgDomainsNotification('Organisation domains', new Date(), uploadResult)
 
     return {
@@ -42,18 +41,18 @@ export class OrgDomainsJob extends Job {
   }
 
   public getName (): string {
-    return 'Organisation Domains File'
+    return 'Organisation domains file'
   }
 }
 
-const getDataFromDatabase = async (): Promise<IOrgDomainData> => {
+export const getDataFromDatabase = async (): Promise<IOrgDomainData> => {
   return {
     allDomains: await getAllDomains(),
     organisationDomains: await getOrganisationDomains()
   }
 }
 
-const getFilePath = (): IFilePath => {
+export const getFilePath = (): IFilePath => {
   const location = '/tmp/'
   const now = new Date()
 
@@ -70,4 +69,8 @@ const getFilePath = (): IFilePath => {
     fileName,
     fullPath: `${location}${fileName}`
   }
+}
+
+export const uploadSpreadsheet = async (filePath: IFilePath): Promise<UploadResult> => {
+  return await uploadFile('orgdomain-files', new JobsFile(filePath.fileName, readFileSync(filePath.fullPath)))
 }

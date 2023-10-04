@@ -1,3 +1,4 @@
+import log from 'log'
 import type { IDomain } from './model/IDomain'
 import type { IOrganisationDomain } from './model/IOrganisationDomain'
 
@@ -7,5 +8,6 @@ export const groupOrganisationsByDomain = (domains: IDomain[], organisationDomai
     domain.organisations = organisationsForDomain
     return domain
   })
+  log.info('Organisations have been grouped by domain')
   return domains
 }

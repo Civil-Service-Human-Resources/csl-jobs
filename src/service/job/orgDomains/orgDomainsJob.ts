@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs'
 import { getAllDomains } from '../../../db/identity/database'
 import { getOrganisationDomains } from '../../../db/shared/database'
 import { uploadFile } from '../../azure/storage/blob/service'
@@ -8,35 +7,28 @@ import type { IDomain } from '../../orgDomains/model/IDomain'
 import { Job } from '../Job'
 import type { JobResult } from '../jobService'
 import log from 'log'
-import { sendOrgDomainsNotification } from '../../notification/govUKNotify/govUkNotify'
+import { sendOrgDomainsNotification, sendOrgDomainsPasswordNotification } from '../../notification/govUKNotify/govUkNotify'
 import { createExcelSpreadsheetfromOrgDomainData } from '../../file/excel'
 import { groupOrganisationsByDomain } from '../../orgDomains/orgDomainGrouping'
 import type { IOrgDomainData } from '../../orgDomains/model/IOrgDomainData'
-import type { IFilePath } from '../../orgDomains/model/iFilePath'
+import * as zip from '../../file/zip'
+import type { Workbook } from 'exceljs'
 
 export class OrgDomainsJob extends Job {
   protected async runJob (): Promise<JobResult> {
     log.info('Running organisation domains job...')
-
-    log.info('Getting domain and organisation data from the database...')
     const data: IOrgDomainData = await getDataFromDatabase()
-    log.info(`Found ${data.allDomains.length} unique domains.`)
-    log.info(`Found ${data.organisationDomains.length} organisation/domain pairs.`)
-
     const organisationsGroupedByDomains: IDomain[] = groupOrganisationsByDomain(data.allDomains, data.organisationDomains)
-    log.info('Organisations have been grouped by domain')
-
-    log.info('Creating spreadsheet...')
-    const filePath: IFilePath = getFilePath()
-    await createExcelSpreadsheetfromOrgDomainData(organisationsGroupedByDomains, filePath.fullPath)
-    log.info('Spreadsheet created.')
-
-    log.info('Uploading file ')
-    const uploadResult: UploadResult = await uploadSpreadsheet(filePath)
-    await sendOrgDomainsNotification('Organisation domains', new Date(), uploadResult)
+    const spreadsheetFileName: string = getSpreadsheetFileName()
+    const workbook: Workbook = createSpreadsheet(organisationsGroupedByDomains)
+    const workbookContent: Buffer = await workbook.xlsx.writeBuffer() as Buffer
+    const zipFileResult: zip.EncryptedZipResult = await storeSpreadsheetAsZipFile(spreadsheetFileName, workbookContent)
+    const zipUploadResult: UploadResult = await uploadZipFileToBlobStorage(zipFileResult.result)
+    await sendZipFileAsEmail(zipUploadResult)
+    await sendPasswordAsEmail(zipFileResult.password)
 
     return {
-      text: `Organisation domains file with name ${filePath.fileName} has been successfully created.`
+      text: 'Organisation domains file has been successfully created and sent.'
     }
   }
 
@@ -46,14 +38,21 @@ export class OrgDomainsJob extends Job {
 }
 
 export const getDataFromDatabase = async (): Promise<IOrgDomainData> => {
+  log.info('Getting domain and organisation data from the database...')
+
+  const allDomains = await getAllDomains()
+  const organisationDomains = await getOrganisationDomains()
+
+  log.info(`Found ${allDomains.length} unique domains.`)
+  log.info(`Found ${organisationDomains.length} organisation/domain pairs.`)
+
   return {
-    allDomains: await getAllDomains(),
-    organisationDomains: await getOrganisationDomains()
+    allDomains,
+    organisationDomains
   }
 }
 
-export const getFilePath = (): IFilePath => {
-  const location = '/tmp/'
+export const getSpreadsheetFileName = (): string => {
   const now = new Date()
 
   const day: string = now.getDate() < 10 ? `0${now.getDate()}` : now.getDate().toString()
@@ -64,13 +63,37 @@ export const getFilePath = (): IFilePath => {
 
   const fileName: string = `orgDomains-${dateSuffix}.xlsx`
 
-  return {
-    location,
-    fileName,
-    fullPath: `${location}${fileName}`
-  }
+  return fileName
 }
 
-export const uploadSpreadsheet = async (filePath: IFilePath): Promise<UploadResult> => {
-  return await uploadFile('orgdomain-files', new JobsFile(filePath.fileName, readFileSync(filePath.fullPath)))
+export const createSpreadsheet = (orgDomainData: IDomain[]): Workbook => {
+  log.info('Creating spreadsheet...')
+  const workbook: Workbook = createExcelSpreadsheetfromOrgDomainData(orgDomainData)
+  log.info('Spreadsheet created.')
+  return workbook
+}
+
+export const storeSpreadsheetAsZipFile = async (fileName: string, spreadsheetContent: Buffer): Promise<zip.EncryptedZipResult> => {
+  log.info('Archiving Excel file in a Zip file...')
+  const encryptedFileResult: zip.EncryptedZipResult = await zip.zipFiles([JobsFile.from(fileName, spreadsheetContent)], 'orgDomains.zip')
+  return encryptedFileResult
+}
+
+export const uploadZipFileToBlobStorage = async (file: JobsFile): Promise<UploadResult> => {
+  log.info('Uploading zip file....')
+  const uploadResult: UploadResult = await uploadFile('orgdomain-files', file)
+  log.info('Zip file uploaded.')
+  return uploadResult
+}
+
+export const sendZipFileAsEmail = async (uploadResult: UploadResult): Promise<void> => {
+  log.info('Sending Zip file as email...')
+  await sendOrgDomainsNotification('Organisation domains', new Date(), uploadResult)
+  log.info('Spreadsheet email sent.')
+}
+
+export const sendPasswordAsEmail = async (password: string): Promise<void> => {
+  log.info('Sending password as email...')
+  await sendOrgDomainsPasswordNotification('Organisation domains', password)
+  log.info('Password sent.')
 }

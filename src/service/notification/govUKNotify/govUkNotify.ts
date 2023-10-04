@@ -6,6 +6,7 @@ import { type UploadResult } from '../../azure/storage/blob/service'
 import { getNotifier } from './GovUkNotifier'
 import dayjs from 'dayjs'
 import type { OrgDomainsEmailPersonalisation } from '../../orgDomains/model/emailPersonalisation'
+import type { PasswordEmailPersonalisation } from '../../orgDomains/model/PasswordEmailPersonalisation'
 
 const { jobs: { courseCompletions, orgDomains } } = config
 const dateFormatTokens = 'DD/MM/YYYY'
@@ -13,7 +14,8 @@ const dateFormatTokens = 'DD/MM/YYYY'
 const notifications: GovUkEmailNotification[] = [
   new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, courseCompletions.notifyTemplate, courseCompletions.emailRecipients),
   new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, courseCompletions.notifyPasswordTemplate, courseCompletions.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate, orgDomains.emailRecipients)
+  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate, orgDomains.emailRecipients),
+  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate, orgDomains.emailRecipients)
 ]
 
 const sendEmail = async (notificationType: GovUkNotification, personalisation: any): Promise<void> => {
@@ -57,4 +59,12 @@ export const sendOrgDomainsNotification = async (description: string, dateCreate
   }
 
   await sendEmail(GovUkNotification.ORG_DOMAIN, personalisation)
+}
+
+export const sendOrgDomainsPasswordNotification = async (description: string, password: string): Promise<void> => {
+  const personalisation: PasswordEmailPersonalisation = {
+    description,
+    password
+  }
+  await sendEmail(GovUkNotification.ORG_DOMAIN_PASSWORD, personalisation)
 }

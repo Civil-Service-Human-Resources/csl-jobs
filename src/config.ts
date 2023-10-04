@@ -34,6 +34,7 @@ const config = {
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
       notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',
+      passwordNotifyTemplate: env.ORG_DOMAINS_PASSWORD_EMAIL_TEMPLATE ?? '',
       emailRecipients: (env.ORG_DOMAINS_EMAIL_RECIPIENTS ?? '').split(',')
     }
   },

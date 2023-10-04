@@ -2,8 +2,6 @@ import { expect } from 'chai'
 import { createExcelSpreadsheetfromOrgDomainData } from './excel'
 import type { IDomain } from '../orgDomains/model/IDomain'
 import type { IOrganisationDomain } from '../orgDomains/model/IOrganisationDomain'
-import ExcelJS from 'exceljs'
-import sinon from 'sinon'
 
 class OrganisationDomain implements IOrganisationDomain {
   [column: number]: any
@@ -25,9 +23,7 @@ class Domain implements IDomain {
 
 describe('Excel tests', () => {
   it('Should create headers at the top of the spreadsheet', async () => {
-    const writeFileMock = sinon.stub(ExcelJS.Workbook.prototype.xlsx, 'writeFile')
-
-    const workbook = await createExcelSpreadsheetfromOrgDomainData([], 'file1.xlsx')
+    const workbook = createExcelSpreadsheetfromOrgDomainData([])
 
     const worksheet = workbook.getWorksheet(1)
 
@@ -35,16 +31,12 @@ describe('Excel tests', () => {
     expect(worksheet.getCell('B1').value).to.equal('Organisation')
     expect(worksheet.getCell('C1').value).to.equal('Usages')
     expect(worksheet.getCell('D1').value).to.equal('Last logged in')
-
-    writeFileMock.restore()
   })
 
   it('Should place the data in the correct cells in the spreadsheet', async () => {
-    const writeFileMock = sinon.stub(ExcelJS.Workbook.prototype.xlsx, 'writeFile')
+    const data: IDomain[] = getOrganisationDomainData()
 
-    const data: Domain[] = getOrganisationDomainData()
-
-    const workbook = await createExcelSpreadsheetfromOrgDomainData(data, 'file1.xlsx')
+    const workbook = createExcelSpreadsheetfromOrgDomainData(data)
 
     const worksheet = workbook.getWorksheet(1)
 
@@ -54,12 +46,10 @@ describe('Excel tests', () => {
     expect(worksheet.getCell('B2').value).to.equal('Cabinet Office')
     expect(worksheet.getCell('B3').value).to.equal('Office for National Statistics')
     expect(worksheet.getCell('B4').value).to.equal('Intellectual Property Office')
-
-    writeFileMock.restore()
   })
 })
 
-const getOrganisationDomainData = (): Domain[] => {
+const getOrganisationDomainData = (): IDomain[] => {
   const od1 = new OrganisationDomain()
   od1.domain = 'test.gov.uk'
   od1.organisation_name = 'Cabinet Office'

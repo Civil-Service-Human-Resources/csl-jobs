@@ -1,7 +1,7 @@
 import type { IDomain } from '../orgDomains/model/IDomain'
 import ExcelJS from 'exceljs'
 
-export const createExcelSpreadsheetfromOrgDomainData = async (domainData: IDomain[], fileFullPath: string): Promise<ExcelJS.Workbook> => {
+export const createExcelSpreadsheetfromOrgDomainData = (domainData: IDomain[]): ExcelJS.Workbook => {
   const workbook = new ExcelJS.Workbook()
   const sheet = workbook.addWorksheet('Organisation domains')
   addHeadersToSheet(sheet)
@@ -28,7 +28,6 @@ export const createExcelSpreadsheetfromOrgDomainData = async (domainData: IDomai
     }
   })
 
-  await workbook.xlsx.writeFile(fileFullPath)
   return workbook
 }
 

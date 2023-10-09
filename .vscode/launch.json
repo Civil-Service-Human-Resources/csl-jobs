@@ -7,6 +7,24 @@
 			"request": "attach",
 			"port": 9229,
 			"preLaunchTask": "func: host start"
+		},
+		{
+			"args": [
+				"--paths",
+				"-p",
+				"${workspaceFolder}/tsconfig.json",
+				"--timeout",
+				"999999",
+				"\"src/**/*.spec.ts\""
+			],
+			"internalConsoleOptions": "openOnSessionStart",
+			"name": "Mocha Tests",
+			"program": "${workspaceFolder}/node_modules/ts-mocha/bin/ts-mocha",
+			"request": "launch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "node"
 		}
 	]
 }

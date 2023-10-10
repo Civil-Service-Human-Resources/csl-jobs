@@ -5,7 +5,7 @@ import { runJob } from '../service/job/jobService'
 
 const { jobs: { orgDomains: { cron } } } = config
 
-export async function generateCourseCompletions (
+export async function generateOrgDomainsFile (
   myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
@@ -14,5 +14,5 @@ export async function generateCourseCompletions (
 
 app.timer('orgDomains', {
   schedule: cron,
-  handler: generateCourseCompletions
+  handler: generateOrgDomainsFile
 })

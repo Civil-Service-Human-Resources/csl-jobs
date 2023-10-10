@@ -14,7 +14,7 @@ const getCourseCompletionSQL = (): string => {
     cr.course_id as course_id,
     cr.course_title as course_title,
     cr.state as state,
-    cr.last_updated as last_updated,
+    DATE_FORMAT(cr.last_updated, "%Y-%m-%d %T") as last_updated,
     cr.is_required as is_required
   from learner_record.course_record cr
   inner join identity.identity i on cr.user_id = i.uid
@@ -23,7 +23,7 @@ const getCourseCompletionSQL = (): string => {
   join csrs.profession p on cs.profession_id = p.id
   join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
   where state = 'COMPLETED'
-  and last_updated between ? and ?
+  and cr.last_updated between ? and ?
   order by last_updated desc, user_id, course_id;`
 }
 

@@ -1,5 +1,6 @@
+import type { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
 import { fetchRows } from '../connection'
-import { type ICourseCompletion } from './model'
+import type { ICourseCompletion } from './model'
 
 const getCourseCompletionSQL = (): string => {
   return `select
@@ -13,7 +14,7 @@ const getCourseCompletionSQL = (): string => {
     cr.course_id as course_id,
     cr.course_title as course_title,
     cr.state as state,
-    cr.last_updated as last_updated,
+    DATE_FORMAT(cr.last_updated, "%Y-%m-%d %T") as last_updated,
     cr.is_required as is_required
   from learner_record.course_record cr
   inner join identity.identity i on cr.user_id = i.uid
@@ -22,11 +23,30 @@ const getCourseCompletionSQL = (): string => {
   join csrs.profession p on cs.profession_id = p.id
   join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
   where state = 'COMPLETED'
-  and last_updated between ? and ?
+  and cr.last_updated between ? and ?
   order by last_updated desc, user_id, course_id;`
 }
 
 export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): Promise<ICourseCompletion[]> => {
   const SQL = getCourseCompletionSQL()
   return await fetchRows<ICourseCompletion>(SQL, [fromDate.toISOString(), toDate.toISOString()])
+}
+
+export const getOrganisationDomains = async (): Promise<IOrganisationDomain[]> => {
+  const query = `SELECT 
+      domain, 
+      IF(parent_org_name IS NULL, organisation_name, CONCAT(organisation_name, ' | ', parent_org_name)) AS organisation_name, 
+      COUNT(domain) AS usages, 
+      MAX(last_logged_in) AS last_logged_in 
+    FROM (
+      SELECT SUBSTRING_INDEX(email,'@', -1) AS domain, csrs.organisational_unit.name AS organisation_name, parent_org_unit.name AS parent_org_name, identity.identity.last_logged_in AS last_logged_in FROM identity.identity
+        JOIN csrs.identity ON csrs.identity.uid = identity.identity.uid
+        JOIN csrs.civil_servant ON csrs.civil_servant.identity_id = csrs.identity.id
+        JOIN csrs.organisational_unit ON csrs.organisational_unit.id = csrs.civil_servant.organisational_unit_id
+        LEFT JOIN csrs.organisational_unit parent_org_unit ON parent_org_unit.id = csrs.organisational_unit.parent_id
+      ) AS domains
+    GROUP BY domain, organisation_name
+    ORDER BY domain;`
+
+  return await fetchRows<IOrganisationDomain>(query, [])
 }

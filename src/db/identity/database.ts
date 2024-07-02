@@ -43,7 +43,7 @@ export const getAllDomains = async (): Promise<IDomain[]> => {
 
 const deleteTokens = async (sql: string, tokenCount: number): Promise<void> => {
   while (tokenCount > 0) {
-    await executeUpdate(sql.replace("{{limit}}", deleteBatchSize.toString()), [], 'identity')
+    await executeUpdate(sql.replace('{{limit}}', deleteBatchSize.toString()), [], 'identity')
     tokenCount = tokenCount - deleteBatchSize
   }
 }

@@ -10,7 +10,7 @@
     "prestart": "npm run clean && npm run build && npm run resources",
     "resources": "copyfiles src/resources/**.* dist",
     "start": "func start",
-    "debug-local": "ts-node src/start.ts ",
+    "debug-local": "set DEBUG=* & ts-node src/start.ts ",
     "test": "nyc ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --reporter spec --exit \"src/**/*.spec.ts\""
   },
   "nyc": {
@@ -19,6 +19,7 @@
     ]
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.620.0",
     "@azure/data-tables": "^13.2.2",
     "@azure/functions": "^4.0.0-alpha.7",
     "@azure/storage-blob": "^12.15.0",

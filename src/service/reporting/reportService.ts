@@ -1,9 +1,9 @@
 import * as azureBlobService from '../azure/storage/blob/service'
+import { type UploadResult } from '../azure/storage/blob/service'
 import { JobsFile } from '../file/models'
 import { getCompletedCourseRecords } from '../../db/shared/database'
 import { objsToCsv } from '../file/csv'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
-import { type UploadResult } from '../azure/storage/blob/service'
 import dayjs from 'dayjs'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
@@ -34,7 +34,7 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimestamp: Date): string => {
+export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimestamp: Date): string => {
   const formatTokens = 'DD_MM_YYYY'
   const startFmt = dayjs(startTimestamp).format(formatTokens)
   const endFmt = dayjs(endTimestamp).format(formatTokens)

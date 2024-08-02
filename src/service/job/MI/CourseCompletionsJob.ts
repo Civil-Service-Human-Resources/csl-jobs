@@ -1,22 +1,14 @@
 import * as govNotifyClient from '../../notification/govUKNotify/govUkNotify'
 import * as tableService from '../../azure/storage/table/service'
 import * as reportService from '../../reporting/reportService'
-import * as dateService from '../../date/service'
 import { type JobResult } from '../jobService'
-import { Job } from '../Job'
 import log from 'log'
-import { type CustomDate } from '../../date/CustomDate'
 import { type NotificationClient } from '../../notification/notifications'
+import { TableDateRangeJob } from './TableDateRangeJob'
 
-interface DateRange {
-  fromDate: CustomDate
-  toDate: CustomDate
-}
-
-export class CourseCompletionsJob extends Job {
-  constructor (protected readonly notificationClient: NotificationClient, private readonly defaultFallbackDuration: string) {
-    super(notificationClient)
-    this.defaultFallbackDuration = defaultFallbackDuration
+export class CourseCompletionsJob extends TableDateRangeJob {
+  constructor (protected readonly notificationClient: NotificationClient, protected readonly defaultFallbackDuration: string) {
+    super(notificationClient, 'courseCompletions', defaultFallbackDuration)
   }
 
   protected async runJob (): Promise<JobResult> {
@@ -42,20 +34,6 @@ export class CourseCompletionsJob extends Job {
     await tableService.upsertJobData('courseCompletions', 'lastReportTimestamp', dates.toDate.toISOString())
     return {
       text: resultText
-    }
-  }
-
-  getFromAndToDates = async (): Promise<DateRange> => {
-    const toTimestamp = dateService.getMidnightToday()
-    log.info('Getting last run timestamp from table service')
-    let lastSuccessTimestamp = await tableService.getDateFromTable('courseCompletions', 'lastReportTimestamp')
-    if (lastSuccessTimestamp === undefined) {
-      log.info(`Last run timestamp does not exist - calculating from fallback duration '${this.defaultFallbackDuration}'`)
-      lastSuccessTimestamp = dateService.getNewDateFromDateWithDuration(toTimestamp, this.defaultFallbackDuration, 'subtract')
-    }
-    return {
-      fromDate: lastSuccessTimestamp,
-      toDate: toTimestamp
     }
   }
 

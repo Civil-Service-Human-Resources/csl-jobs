@@ -14,3 +14,12 @@ export interface ICourseCompletion extends RowDataPacket {
   last_updated: string
   is_required: boolean
 }
+
+export interface IAnonymousCourseRecord extends RowDataPacket {
+  organisation: string
+  organisation_id: string
+  organisation_code: string
+  grade: string
+  profession: string
+  state: string
+}

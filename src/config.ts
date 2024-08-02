@@ -1,16 +1,17 @@
 import * as path from 'path'
 import * as dotenv from 'dotenv'
-import logNode = require('log-node')
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
+import logNode = require('log-node')
+
 dotenv.config()
 logNode()
 const env = process.env
 
 const config = {
   database: {
-    server: env.DATABASE_SERVER,
-    username: env.DATABASE_USER,
-    password: env.DATABASE_PASSWORD,
+    server: env.DATABASE_SERVER ?? 'localhost',
+    username: env.DATABASE_USER ?? 'root',
+    password: env.DATABASE_PASSWORD ?? 'my-secret-pw',
     enableDebugLogs: JSON.parse(env.DATABASE_ENABLE_DEBUG ?? 'false') as boolean,
     sslCertificate: env.SSL_CERT ?? path.resolve(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
   },
@@ -36,6 +37,13 @@ const config = {
       notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',
       passwordNotifyTemplate: env.ORG_DOMAINS_PASSWORD_EMAIL_TEMPLATE ?? '',
       emailRecipients: (env.ORG_DOMAINS_EMAIL_RECIPIENTS ?? '').split(',')
+    },
+    obtStats: {
+      cron: env.COURSE_COMPLETIONS_CRON ?? '0 0 0 * * *',
+      defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1D',
+      bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
+      keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
+      courseIds: (env.OBT_COURSE_IDS ?? '').split(',')
     }
   },
   notifications: {
@@ -46,6 +54,12 @@ const config = {
     },
     govNotify: {
       apiKey: env.GOVUK_NOTIFY_API_KEY
+    }
+  },
+  aws: {
+    storage: {
+      accessKey: env.AWS_S3_ACCESS_KEY ?? '',
+      secretKey: env.AWS_S3_SECRET_KEY ?? ''
     }
   },
   azure: {

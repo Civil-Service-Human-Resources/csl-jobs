@@ -8,6 +8,7 @@ import { JobsFile } from '../../file/models'
 import { getTimeRangeFileName } from '../../reporting/reportService'
 import { uploadFile } from '../../aws/s3/service'
 import { TableDateRangeJob } from './TableDateRangeJob'
+import { canSend } from '../../aws/s3/connection'
 
 export class OBTStatsJob extends TableDateRangeJob {
   constructor (protected readonly notificationClient: NotificationClient,
@@ -19,16 +20,23 @@ export class OBTStatsJob extends TableDateRangeJob {
   }
 
   protected async runJob (): Promise<JobResult> {
-    log.info('Getting course completions')
-    const dates = await this.getFromAndToDates()
-    const data = await getAnonymousCourseRecords(dates.fromDate, dates.toDate, this.courseIds)
-    const csv = await objsToCsv(data)
-    const fileName = getTimeRangeFileName('obt_stats', dates.fromDate, dates.toDate)
-    const csvFile = JobsFile.from(`${this.keySubFolder}/${fileName}.csv`, csv)
-    await uploadFile(this.bucketAlias, csvFile)
-    await tableService.upsertJobData('obtStats', 'lastReportTimestamp', dates.toDate.toISOString())
+    let resp = 'AWS bucket credentials not set'
+    if (canSend && this.bucketAlias.length > 0) {
+      log.info('Getting course completions')
+      const dates = await this.getFromAndToDates()
+      const data = await getAnonymousCourseRecords(dates.fromDate, dates.toDate, this.courseIds)
+      resp = 'No OBT data to send'
+      if (data.length > 0) {
+        const csv = await objsToCsv(data)
+        const fileName = getTimeRangeFileName('obt_stats', dates.fromDate, dates.toDate)
+        const csvFile = JobsFile.from(`${this.keySubFolder}/${fileName}.csv`, csv)
+        await uploadFile(this.bucketAlias, csvFile)
+        await tableService.upsertJobData('obtStats', 'lastReportTimestamp', dates.toDate.toISOString())
+        resp = `Successfully generated and upload OBT file '${fileName}' to S3`
+      }
+    }
     return {
-      text: `Successfully generated and upload OBT file '${fileName}' to S3`
+      text: resp
     }
   }
 

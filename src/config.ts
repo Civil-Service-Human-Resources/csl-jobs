@@ -3,7 +3,9 @@ import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 
-dotenv.config()
+dotenv.config({
+  path: path.join(__dirname, '/.env')
+})
 logNode()
 const env = process.env
 
@@ -13,7 +15,8 @@ const config = {
     username: env.DATABASE_USER ?? 'root',
     password: env.DATABASE_PASSWORD ?? 'my-secret-pw',
     enableDebugLogs: JSON.parse(env.DATABASE_ENABLE_DEBUG ?? 'false') as boolean,
-    sslCertificate: env.SSL_CERT ?? path.resolve(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
+    useSSL: JSON.parse(env.DATABASE_USE_SSL ?? 'true') as boolean,
+    sslCertificate: env.SSL_CERT ?? path.join(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
   },
   jobs: {
     redundantTokens: {
@@ -63,6 +66,7 @@ const config = {
     }
   },
   azure: {
+    siteName: env.WEBSITE_SITE_NAME ?? 'csl-jobs',
     storage: {
       accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',
       table: {

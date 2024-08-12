@@ -1,6 +1,7 @@
 import { type Connection, createConnection, type RowDataPacket } from 'mysql2/promise'
 import config from '../config'
 import log from 'log'
+import * as fs from 'node:fs'
 
 const {
   database: {
@@ -8,28 +9,29 @@ const {
     username,
     password,
     enableDebugLogs,
-    sslCertificate
+    sslCertificate,
+    useSSL
   }
 } = config
 
 export const getConn = async (database?: string): Promise<Connection> => {
-  const config = {
+  let config = {
     database,
     host: server,
     user: username,
     password,
     debug: enableDebugLogs
   }
-  // if (sslCertificate !== '') {
-  //   config = {
-  //     ...config,
-  //     ...{
-  //       ssl: {
-  //         cert: fs.readFileSync(sslCertificate).toString()
-  //       }
-  //     }
-  //   }
-  // }
+  if (useSSL) {
+    config = {
+      ...config,
+      ...{
+        ssl: {
+          cert: fs.readFileSync(sslCertificate).toString()
+        }
+      }
+    }
+  }
   return await createConnection(config)
 }
 

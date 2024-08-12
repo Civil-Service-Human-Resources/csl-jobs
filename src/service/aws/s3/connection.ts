@@ -10,6 +10,8 @@ const {
   }
 } = config
 
+export const canSend = (secretKey.length > 0 && accessKey.length > 0)
+
 export const getS3Client = (): S3Client => {
   return new S3Client({
     region: 'eu-west-2',

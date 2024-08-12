@@ -1,9 +1,9 @@
-import {type Notifier} from './Notifier'
-import {WebClient} from '@slack/web-api'
-import {SlackNotifier} from './SlackNotifier'
+import { type Notifier } from './Notifier'
+import { WebClient } from '@slack/web-api'
+import { SlackNotifier } from './SlackNotifier'
 import config from '../../config'
-import {NOTIFICATION_LEVEL} from './NotificationLevel'
-import log = require('log');
+import { NOTIFICATION_LEVEL } from './NotificationLevel'
+import log = require('log')
 
 const { azure: { siteName }, notifications: { notificationLevel, slack } } = config
 

@@ -21,12 +21,12 @@ export class NotificationClient {
   }
 
   private readonly notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
-    log.info(message)
+    const fmtMsg = `${this.appName} | ${message}`
+    log.info(fmtMsg)
     if (level.valueOf() >= this.notificationLevel.valueOf()) {
       for (const notifier of this.notifiers) {
         try {
           log.debug(`Notifying ${notifier.getName()} with message: '${message}'`)
-          const fmtMsg = `${this.appName} | ${message}`
           await notifier.notify(fmtMsg)
         } catch (e) {
           const exMessage = e as string

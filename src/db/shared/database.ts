@@ -37,7 +37,7 @@ const getCourseRecordSQL = (): string => {
     cr.course_id as course_id,
     cr.course_title as course_title,
     cr.state as state,
-    DATE_FORMAT(cr.last_updated, "%Y-%m-%d %T") as last_updated
+    DATE_FORMAT(convert_tz(cr.last_updated, 'UTC', 'Europe/London'), "%Y-%m-%d %T") as last_updated
   from learner_record.course_record cr
   inner join identity.identity i on cr.user_id = i.uid
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid

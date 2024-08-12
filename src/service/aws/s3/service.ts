@@ -14,7 +14,7 @@ export const uploadFile = async (bucketName: string, file: JobsFile): Promise<vo
       Body: file.contents
     }
   ))
-  console.log(res)
+  log.debug(res)
   const resCode = res.$metadata.httpStatusCode ?? 'undefined'
   log.debug(`Upload result: ${resCode}`)
 }

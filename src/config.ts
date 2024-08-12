@@ -50,7 +50,7 @@ const config = {
     }
   },
   notifications: {
-    notificationLevel: NOTIFICATION_LEVEL[env.GLOBAL_NOTIFICATION_LEVEL ?? NOTIFICATION_LEVEL.ERROR] as NOTIFICATION_LEVEL,
+    notificationLevel: NOTIFICATION_LEVEL[env.GLOBAL_NOTIFICATION_LEVEL ?? 'ERROR'] as NOTIFICATION_LEVEL,
     slack: {
       apiToken: env.SLACK_API_TOKEN,
       alertChannelId: env.SLACK_CHANNEL_NOTIFICATION_ID

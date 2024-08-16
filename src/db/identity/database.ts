@@ -13,7 +13,7 @@ const ALL_INVALID_USER_TOKENS = 'select count(*) from token where status = 1 and
 
 const COUNT_DUPLICATE_TOKENS = `SELECT authentication_id, client_id
 FROM token
-WHERE status COLLATE utf8_unicode_ci = 0
+WHERE status = 0
 GROUP BY authentication_id
 HAVING COUNT(*) > 1;`
 
@@ -29,7 +29,7 @@ export const deactivateTokens = async (authenticationIds: string[]): Promise<voi
   const sql = `
 UPDATE token
 SET status = 1
-WHERE authentication_id COLLATE utf8_unicode_ci in (${formattedIdParams}) AND status COLLATE utf8_unicode_ci = 0;`
+WHERE authentication_id in (${formattedIdParams}) AND status = 0;`
   await executeUpdate(sql, authenticationIds, 'identity')
 }
 

@@ -17,8 +17,8 @@ WHERE status = 0
 GROUP BY authentication_id
 HAVING COUNT(*) > 1;`
 
-const DELETE_INVALID_TOKEN_SQL = 'delete from token where status = 1 limit ?;'
-const DELETE_VALID_USER_TOKEN_SQL = 'delete from token where status = 0 and user_name is not null limit ?;'
+const DELETE_INVALID_TOKEN_SQL = 'delete from token where status = 1 limit {{limit}};'
+const DELETE_VALID_USER_TOKEN_SQL = 'delete from token where status = 0 and user_name is not null limit {{limit}};'
 
 export const getDuplicateTokens = async (): Promise<IPartialToken[]> => {
   return await fetchRows<IPartialToken>(COUNT_DUPLICATE_TOKENS, [], 'identity')
@@ -43,7 +43,7 @@ export const getAllDomains = async (): Promise<IDomain[]> => {
 
 const deleteTokens = async (sql: string, tokenCount: number): Promise<void> => {
   while (tokenCount > 0) {
-    await executeUpdate(sql, [deleteBatchSize], 'identity')
+    await executeUpdate(sql.replace('{{limit}}', deleteBatchSize.toString()), [], 'identity')
     tokenCount = tokenCount - deleteBatchSize
   }
 }

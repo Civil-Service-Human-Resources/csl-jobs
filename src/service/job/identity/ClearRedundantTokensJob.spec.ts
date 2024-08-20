@@ -14,6 +14,7 @@ describe('Test clear redundant tokens', () => {
   })
   sandbox.stub(identityDB, 'countAllTokens').resolves(0)
   sandbox.stub(identityDB, 'countAllValidNonUserTokens').resolves(0)
+  sandbox.stub(identityDB, 'countAllValidUserTokens').resolves(0)
   const countAllInvalidNonUserTokens = sandbox.stub(identityDB, 'countAllInvalidNonUserTokens').resolves(0)
   const countAllInvalidUserTokens = sandbox.stub(identityDB, 'countAllInvalidUserTokens').resolves(0)
   const deleteInvalidNonUserTokens = sandbox.stub(identityDB, 'deleteInvalidNonUserTokens').resolves(undefined)

@@ -11,28 +11,33 @@ export class ClearRedundantTokensJob extends Job {
     const validNonUserTokens = await identityDB.countAllValidNonUserTokens()
     log.info(`Total valid non-user tokens: ${validNonUserTokens}`)
 
+    const validUserTokens = await identityDB.countAllValidUserTokens()
+    log.info(`Total valid user tokens: ${validUserTokens}`)
+
+    const totalValidTokens = validNonUserTokens + validUserTokens
+    log.info(`Total valid tokens: ${totalValidTokens}`)
+
     const invalidNonUserTokens = await identityDB.countAllInvalidNonUserTokens()
     log.info(`Total invalid non-user tokens: ${invalidNonUserTokens}`)
 
     const invalidUserTokens = await identityDB.countAllInvalidUserTokens()
     log.info(`Total invalid user tokens: ${invalidUserTokens}`)
 
-    const validUserTokens = await identityDB.countAllValidUserTokens()
-    log.info(`Total valid user tokens: ${validUserTokens}`)
-
     const totalInvalidTokens = invalidNonUserTokens + invalidUserTokens
     log.info(`Total invalid tokens: ${totalInvalidTokens}`)
-    if (totalInvalidTokens > 0) {
-      log.info('Deleting invalid tokens')
-      await identityDB.deleteInvalidTokens(totalInvalidTokens)
+
+    if (invalidNonUserTokens > 0) {
+      log.info('Deleting invalid non user tokens')
+      await identityDB.deleteInvalidNonUserTokens(invalidNonUserTokens)
     }
 
-    if (validUserTokens > 0) {
-      log.info('Deleting valid user tokens')
-      await identityDB.deleteValidTokens(validUserTokens)
+    if (invalidUserTokens > 0) {
+      log.info('Deleting invalid user tokens')
+      await identityDB.deleteInvalidUserTokens(invalidUserTokens)
     }
+
     return {
-      text: `Deleted ${totalInvalidTokens} invalid tokens and ${validUserTokens} valid tokens`
+      text: `Deleted ${invalidNonUserTokens} invalid non-user tokens and ${invalidUserTokens} invalid user tokens`
     }
   }
 

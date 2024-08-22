@@ -5,11 +5,11 @@ import type { IDomain } from '../../service/orgDomains/model/IDomain'
 
 const { jobs: { redundantTokens: { deleteBatchSize } } } = config
 
-const ALL_TOKENS = 'select count(*) from token'
-const ALL_VALID_NON_USER_TOKENS = 'select count(*) from token where status = 0 and user_name is null;'
-const ALL_INVALID_NON_USER_TOKENS = 'select count(*) from token where status = 1 and user_name is null;'
-const ALL_VALID_USER_TOKENS = 'select count(*) from token where status = 0 and user_name is not null;'
-const ALL_INVALID_USER_TOKENS = 'select count(*) from token where status = 1 and user_name is not null;'
+const ALL_TOKENS = 'select count(*) from oauth2_authorization;'
+const ALL_VALID_NON_USER_TOKENS = 'select count(*) from oauth2_authorization where authorization_grant_type = "client_credentials" and access_token_expires_at > now();'
+const ALL_INVALID_NON_USER_TOKENS = 'select count(*) from oauth2_authorization where authorization_grant_type = "client_credentials" and access_token_expires_at <= now();'
+const ALL_VALID_USER_TOKENS = 'select count(*) from oauth2_authorization where authorization_grant_type = "authorization_code" and access_token_expires_at > now();'
+const ALL_INVALID_USER_TOKENS = 'select count(*) from oauth2_authorization where authorization_grant_type = "authorization_code" and access_token_expires_at <= now();'
 
 const COUNT_DUPLICATE_TOKENS = `SELECT authentication_id, client_id
 FROM token
@@ -17,8 +17,8 @@ WHERE status = 0
 GROUP BY authentication_id
 HAVING COUNT(*) > 1;`
 
-const DELETE_INVALID_TOKEN_SQL = 'delete from token where status = 1 limit ?;'
-const DELETE_VALID_USER_TOKEN_SQL = 'delete from token where status = 0 and user_name is not null limit ?;'
+const DELETE_INVALID_NON_USER_TOKEN_SQL = 'delete from oauth2_authorization where authorization_grant_type = "client_credentials" and access_token_expires_at <= now() limit {{limit}};'
+const DELETE_INVALID_USER_TOKEN_SQL = 'delete from oauth2_authorization where authorization_grant_type = "authorization_code" and access_token_expires_at <= now() limit {{limit}};'
 
 export const getDuplicateTokens = async (): Promise<IPartialToken[]> => {
   return await fetchRows<IPartialToken>(COUNT_DUPLICATE_TOKENS, [], 'identity')
@@ -43,7 +43,7 @@ export const getAllDomains = async (): Promise<IDomain[]> => {
 
 const deleteTokens = async (sql: string, tokenCount: number): Promise<void> => {
   while (tokenCount > 0) {
-    await executeUpdate(sql, [deleteBatchSize], 'identity')
+    await executeUpdate(sql.replace('{{limit}}', deleteBatchSize.toString()), [], 'identity')
     tokenCount = tokenCount - deleteBatchSize
   }
 }
@@ -68,10 +68,10 @@ export const countAllInvalidUserTokens = async (): Promise<number> => {
   return await fetchCount(ALL_INVALID_USER_TOKENS, [], 'identity')
 }
 
-export const deleteInvalidTokens = async (count: number): Promise<void> => {
-  await deleteTokens(DELETE_INVALID_TOKEN_SQL, count)
+export const deleteInvalidNonUserTokens = async (count: number): Promise<void> => {
+  await deleteTokens(DELETE_INVALID_NON_USER_TOKEN_SQL, count)
 }
 
-export const deleteValidTokens = async (count: number): Promise<void> => {
-  await deleteTokens(DELETE_VALID_USER_TOKEN_SQL, count)
+export const deleteInvalidUserTokens = async (count: number): Promise<void> => {
+  await deleteTokens(DELETE_INVALID_USER_TOKEN_SQL, count)
 }

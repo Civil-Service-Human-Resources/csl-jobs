@@ -1,6 +1,6 @@
 import type { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
 import { fetchRows } from '../connection'
-import type { IAnonymousCourseRecord, ICourseCompletion } from './model'
+import type { IAnonymousCourseRecord, ICourseCompletion, IOrganisation } from './model'
 
 const getCourseCompletionSQL = (): string => {
   return `select
@@ -39,7 +39,6 @@ const getCourseRecordSQL = (): string => {
     cr.state as state,
     DATE_FORMAT(convert_tz(cr.last_updated, 'UTC', 'Europe/London'), "%Y-%m-%d %T") as last_updated
   from learner_record.course_record cr
-  inner join identity.identity i on cr.user_id = i.uid
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
   inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id
   join csrs.profession p on cs.profession_id = p.id
@@ -59,6 +58,12 @@ export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): P
 export const getAnonymousCourseRecords = async (fromDate: Date, toDate: Date, courseIds: string[]): Promise<IAnonymousCourseRecord[]> => {
   const SQL = getCourseRecordSQL()
   return await fetchRows<IAnonymousCourseRecord>(SQL, [fromDate.toISOString(), toDate.toISOString(), courseIds])
+}
+
+export const getOrganisationsWithIds = async (): Promise<IOrganisation[]> => {
+  const query = `SELECT ou.name, ou.id, ou.parent_id
+  FROM csrs.organisational_unit ou`
+  return await fetchRows<IOrganisation>(query, [])
 }
 
 export const getOrganisationDomains = async (): Promise<IOrganisationDomain[]> => {

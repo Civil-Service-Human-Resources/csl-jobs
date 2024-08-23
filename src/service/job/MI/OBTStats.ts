@@ -9,6 +9,7 @@ import { getTimeRangeFileName } from '../../reporting/reportService'
 import { uploadFile } from '../../aws/s3/service'
 import { TableDateRangeJob } from './TableDateRangeJob'
 import { canSend } from '../../aws/s3/connection'
+import { getOrganisationsWithFullNames } from '../../csrs/service'
 
 export class OBTStatsJob extends TableDateRangeJob {
   constructor (protected readonly notificationClient: NotificationClient,
@@ -25,6 +26,13 @@ export class OBTStatsJob extends TableDateRangeJob {
       log.info('Getting course completions')
       const dates = await this.getFromAndToDates()
       const data = await getAnonymousCourseRecords(dates.fromDate, dates.toDate, this.courseIds)
+      const orgsNameMap = await getOrganisationsWithFullNames()
+      for (const row of data) {
+        const fullOrgName = orgsNameMap.get(parseInt(row.organisationId))
+        if (fullOrgName !== undefined) {
+          row.organisation = fullOrgName
+        }
+      }
       resp = 'No OBT data to send'
       if (data.length > 0) {
         const csv = await objsToCsv(data)

@@ -23,3 +23,9 @@ export interface IAnonymousCourseRecord extends RowDataPacket {
   profession: string
   state: string
 }
+
+export interface IOrganisation extends RowDataPacket {
+  id: number
+  name: string
+  parent_id: number | null
+}

@@ -16,12 +16,17 @@ export interface ICourseCompletion extends RowDataPacket {
 }
 
 export interface IAnonymousCourseRecord extends RowDataPacket {
+  id: string
+  user_id: string
+  course_id: string
+  course_title: string
   organisation: string
   organisation_id: string
   organisation_code: string
   grade: string
   profession: string
   state: string
+  last_updated: string
 }
 
 export interface IOrganisation extends RowDataPacket {

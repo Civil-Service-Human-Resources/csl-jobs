@@ -5,6 +5,8 @@ import { getCompletedCourseRecords } from '../../db/shared/database'
 import { objsToCsv } from '../file/csv'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
 import dayjs from 'dayjs'
+import * as learnerRecordService from '../learnerRecord/service'
+import * as awsService from '../aws/s3/service'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -15,6 +17,21 @@ interface UploadedZipReport {
 
 const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
   return await azureBlobService.uploadFile(MI_BLOB_CONTAINER, file)
+}
+
+export const generateOBTStatsAndUploadToS3 = async (
+  from: Date, to: Date, courseIds: string[],
+  s3Directory: string, s3BucketAlias: string): Promise<string> => {
+  const data = await learnerRecordService.getFormattedCourseRecords(from, to, courseIds)
+  let resp = 'No OBT data to send'
+  if (data.length > 0) {
+    const fileName = getTimeRangeFileName('obt_stats', from, to)
+    const csv = await objsToCsv(data)
+    const csvFile = JobsFile.from(`${s3Directory}/${fileName}.csv`, csv)
+    await awsService.uploadFile(s3BucketAlias, csvFile)
+    resp = `Successfully generated and uploaded OBT file '${fileName}' to S3`
+  }
+  return resp
 }
 
 export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: Date, toTimestamp: Date): Promise<UploadedZipReport | undefined> => {

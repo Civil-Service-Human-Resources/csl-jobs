@@ -1,14 +1,14 @@
 import sinon = require('sinon')
 import { expect } from 'chai'
 import * as database from '../../db/shared/database'
-import {getOrganisationsWithFullNames} from "./service";
+import { getOrganisationsWithFullNames } from './service'
 
 describe('Test csrsService', () => {
   const sandbox = sinon.createSandbox()
   const stubs: any = {}
 
   before(() => {
-    stubs.sendCourseCompletionsNotification = sandbox.stub(database, 'getOrganisationsWithIds')
+    stubs.getOrganisationsWithIds = sandbox.stub(database, 'getOrganisationsWithIds')
   })
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('Test csrsService', () => {
         { parent_id: null, name: 'Org 4', id: 4 },
         { parent_id: 1, name: 'Org 5', id: 5 }
       ]
-      stubs.sendCourseCompletionsNotification.resolves(orgs)
+      stubs.getOrganisationsWithIds.resolves(orgs)
       const res = await getOrganisationsWithFullNames()
       expect(res.get(1)).to.eq('Org 1')
       expect(res.get(2)).to.eq('Org 1 | Org 2')

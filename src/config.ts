@@ -59,6 +59,9 @@ const config = {
       apiKey: env.GOVUK_NOTIFY_API_KEY
     }
   },
+  app: {
+    defaultTimezone: env.SERVER_DEFAULT_TZ ?? 'UTC'
+  },
   aws: {
     storage: {
       accessKey: env.AWS_S3_ACCESS_KEY ?? '',
@@ -78,5 +81,7 @@ const config = {
     }
   }
 }
+
+process.env.TZ = config.app.defaultTimezone
 
 export default config

@@ -29,15 +29,17 @@ const getCourseCompletionSQL = (): string => {
 
 const getCourseRecordSQL = (): string => {
   return `select
-    ou.name as organisation,
-    ou.id as organisationId,
-    ou.code as organisationCode,
-    p.name as profession,
-    g.name as grade,
+    concat(cr.course_id, '-', cr.user_id) as id,
+    cr.user_id as user_id,
     cr.course_id as course_id,
     cr.course_title as course_title,
+    ou.name as organisation,
+    ou.id as organisation_id,
+    ou.code as organisation_code,
+    g.name as grade,
+    p.name as profession,
     cr.state as state,
-    DATE_FORMAT(convert_tz(cr.last_updated, 'UTC', 'Europe/London'), "%Y-%m-%d %T") as last_updated
+    cr.last_updated as last_updated
   from learner_record.course_record cr
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
   inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id

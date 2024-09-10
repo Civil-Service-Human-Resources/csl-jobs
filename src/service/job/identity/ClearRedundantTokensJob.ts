@@ -37,8 +37,7 @@ export class ClearRedundantTokensJob extends Job {
     }
 
     return {
-      text: `Deleted ${invalidNonUserTokens} invalid non-user tokens and ${invalidUserTokens} invalid user tokens.
-      Valid user tokens remaining: ${validUserTokens}. Valid non-user tokens remaining: ${validNonUserTokens}.`
+      text: `Deleted ${invalidNonUserTokens} invalid non-user tokens and ${invalidUserTokens} invalid user tokens. Valid user tokens remaining: ${validUserTokens}. Valid non-user tokens remaining: ${validNonUserTokens}.`
     }
   }
 

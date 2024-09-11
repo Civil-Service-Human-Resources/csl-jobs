@@ -7,6 +7,7 @@ import config from '../../config'
 import { ClearRedundantTokensJob } from './identity/ClearRedundantTokensJob'
 import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
 import { OrgDomainsJob } from './orgDomains/orgDomainsJob'
+import { OBTStatsJob } from './MI/OBTStats'
 
 const notificationClient = getNotificationClient()
 
@@ -28,6 +29,11 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       break
     case JobType.ORG_DOMAINS:
       job = new OrgDomainsJob(notificationClient)
+      break
+    case JobType.OBT_STATS:
+      job = new OBTStatsJob(notificationClient, config.jobs.obtStats.defaultFallbackPeriod,
+        config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
+        config.jobs.obtStats.courseIds)
       break
     default:
       job = undefined

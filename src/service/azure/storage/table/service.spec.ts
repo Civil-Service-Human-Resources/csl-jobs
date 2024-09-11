@@ -26,7 +26,6 @@ describe('Azure table service tests', () => {
 
   describe('Upsert jobData to table tests', () => {
     it('Should upsert jobData', async () => {
-      console.log(upsertJobData)
       client.upsertEntity = sandbox.stub().resolves()
       await upsertJobData('testPartition', 'testRow', 'value')
       sandbox.assert.calledWith(client.upsertEntity, {

@@ -1,14 +1,16 @@
 import { type Notifier } from './Notifier'
 import { WebClient } from '@slack/web-api'
 import { SlackNotifier } from './SlackNotifier'
-import log = require('log')
 import config from '../../config'
 import { NOTIFICATION_LEVEL } from './NotificationLevel'
+import log = require('log')
 
-const { notifications: { notificationLevel, slack } } = config
+const { azure: { siteName }, notifications: { notificationLevel, slack } } = config
 
 export class NotificationClient {
-  constructor (private readonly notifiers: Notifier[], private readonly notificationLevel: NOTIFICATION_LEVEL) {}
+  constructor (private readonly notifiers: Notifier[], private readonly notificationLevel: NOTIFICATION_LEVEL,
+    private readonly appName: string
+  ) {}
 
   infoNotification = async (message: string): Promise<void> => {
     await this.notify(message, NOTIFICATION_LEVEL.ALL)
@@ -19,12 +21,13 @@ export class NotificationClient {
   }
 
   private readonly notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
-    log.info(message)
+    const fmtMsg = `${this.appName} | ${message}`
+    log.info(fmtMsg)
     if (level.valueOf() >= this.notificationLevel.valueOf()) {
       for (const notifier of this.notifiers) {
         try {
           log.debug(`Notifying ${notifier.getName()} with message: '${message}'`)
-          await notifier.notify(message)
+          await notifier.notify(fmtMsg)
         } catch (e) {
           const exMessage = e as string
           log.error(`Error encountered while making notification to ${notifier.getName()} notifier. Error: ${exMessage}`)
@@ -58,5 +61,5 @@ const getNotifiers = (): Notifier[] => {
 
 export const getNotificationClient = (): NotificationClient => {
   const notifiers = getNotifiers()
-  return new NotificationClient(notifiers, notificationLevel)
+  return new NotificationClient(notifiers, notificationLevel, siteName)
 }

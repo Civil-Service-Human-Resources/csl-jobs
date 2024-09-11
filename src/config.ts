@@ -42,8 +42,8 @@ const config = {
       emailRecipients: (env.ORG_DOMAINS_EMAIL_RECIPIENTS ?? '').split(',')
     },
     obtStats: {
-      cron: env.COURSE_COMPLETIONS_CRON ?? '0 0 0 * * *',
-      defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1D',
+      cron: env.OBT_STATS_CRON ?? '0 0 0 * * *',
+      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1D',
       bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
       courseIds: (env.OBT_COURSE_IDS ?? '').split(',')

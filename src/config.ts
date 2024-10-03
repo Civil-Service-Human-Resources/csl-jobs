@@ -1,18 +1,22 @@
 import * as path from 'path'
 import * as dotenv from 'dotenv'
-import logNode = require('log-node')
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
-dotenv.config()
+import logNode = require('log-node')
+
+dotenv.config({
+  path: path.join(__dirname, '/.env')
+})
 logNode()
 const env = process.env
 
 const config = {
   database: {
-    server: env.DATABASE_SERVER,
-    username: env.DATABASE_USER,
-    password: env.DATABASE_PASSWORD,
+    server: env.DATABASE_SERVER ?? 'localhost',
+    username: env.DATABASE_USER ?? 'root',
+    password: env.DATABASE_PASSWORD ?? 'my-secret-pw',
     enableDebugLogs: JSON.parse(env.DATABASE_ENABLE_DEBUG ?? 'false') as boolean,
-    sslCertificate: env.SSL_CERT ?? path.resolve(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
+    useSSL: JSON.parse(env.DATABASE_USE_SSL ?? 'true') as boolean,
+    sslCertificate: env.SSL_CERT ?? path.join(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
   },
   jobs: {
     redundantTokens: {
@@ -36,10 +40,17 @@ const config = {
       notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',
       passwordNotifyTemplate: env.ORG_DOMAINS_PASSWORD_EMAIL_TEMPLATE ?? '',
       emailRecipients: (env.ORG_DOMAINS_EMAIL_RECIPIENTS ?? '').split(',')
+    },
+    obtStats: {
+      cron: env.OBT_STATS_CRON ?? '0 0 0 * * *',
+      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1D',
+      bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
+      keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
+      courseIds: (env.OBT_COURSE_IDS ?? '').split(',')
     }
   },
   notifications: {
-    notificationLevel: NOTIFICATION_LEVEL[env.GLOBAL_NOTIFICATION_LEVEL ?? NOTIFICATION_LEVEL.ERROR] as NOTIFICATION_LEVEL,
+    notificationLevel: NOTIFICATION_LEVEL[env.GLOBAL_NOTIFICATION_LEVEL ?? 'ERROR'] as NOTIFICATION_LEVEL,
     slack: {
       apiToken: env.SLACK_API_TOKEN,
       alertChannelId: env.SLACK_CHANNEL_NOTIFICATION_ID
@@ -48,7 +59,17 @@ const config = {
       apiKey: env.GOVUK_NOTIFY_API_KEY
     }
   },
+  app: {
+    defaultTimezone: env.SERVER_DEFAULT_TZ ?? 'UTC'
+  },
+  aws: {
+    storage: {
+      accessKey: env.AWS_S3_ACCESS_KEY ?? '',
+      secretKey: env.AWS_S3_SECRET_KEY ?? ''
+    }
+  },
   azure: {
+    siteName: env.WEBSITE_SITE_NAME ?? 'csl-jobs-local',
     storage: {
       accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',
       table: {
@@ -60,5 +81,7 @@ const config = {
     }
   }
 }
+
+process.env.TZ = config.app.defaultTimezone
 
 export default config

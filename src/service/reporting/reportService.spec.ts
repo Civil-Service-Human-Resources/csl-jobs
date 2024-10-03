@@ -1,11 +1,13 @@
 import * as azureBlobService from '../azure/storage/blob/service'
+import * as awsService from '../aws/s3/service'
 import * as database from '../../db/shared/database'
 import * as zip from '../file/zip'
 import * as csv from '../file/csv'
 import sinon from 'sinon'
 import { JobsFile } from '../file/models'
-import { generateCourseCompletionsReportZip } from './reportService'
+import { generateCourseCompletionsReportZip, generateOBTStatsAndUploadToS3 } from './reportService'
 import { expect } from 'chai'
+import * as learnerRecordService from '../learnerRecord/service'
 
 const fakeCourseCompletionRow = {
   user_id: 'user_id',
@@ -38,6 +40,23 @@ const testDate = new Date('2023-01-01 01:01:00')
 
 describe('Report service tests', () => {
   const sandbox = sinon.createSandbox()
+  describe('Generate OBT stats tests', () => {
+    const stubs: any = {}
+    before(() => {
+      stubs.getFormattedCourseRecords = sandbox.stub(learnerRecordService, 'getFormattedCourseRecords').resolves([{} as any])
+      stubs.objsToCsv = sandbox.stub(csv, 'objsToCsv').resolves(fakeCsv)
+      stubs.uploadFile = sandbox.stub(awsService, 'uploadFile').resolves()
+    })
+    after(() => {
+      sandbox.restore()
+    })
+    it('should upload a csv file to S3 when completion rows have been found', async () => {
+      const res = await generateOBTStatsAndUploadToS3(testDate, testDate, ['courseId'], 's3Dir', 's3Bucket')
+      sandbox.assert.calledWith(stubs.getFormattedCourseRecords, testDate, testDate, ['courseId'])
+      sandbox.assert.calledWith(stubs.objsToCsv, [{} as any])
+      expect(res).to.eql('Successfully generated and uploaded OBT file \'obt_stats_01_01_2023_to_01_01_2023\' to S3')
+    })
+  })
   describe('Generate course completions tests', () => {
     const stubs: any = {}
     before(() => {

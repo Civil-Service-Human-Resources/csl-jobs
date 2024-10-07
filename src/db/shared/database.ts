@@ -36,7 +36,8 @@ const getCourseRecordSQL = (): string => {
     ou.name as organisation,
     ou.id as organisation_id,
     ou.code as organisation_code,
-    g.name as grade,
+    g.code as grade_code,
+    g.name as grade_name,
     p.name as profession,
     cr.state as state,
     cr.last_updated as last_updated

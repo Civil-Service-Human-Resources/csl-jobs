@@ -25,8 +25,7 @@ export interface IAnonymousCourseRecord extends RowDataPacket {
   organisation: string
   organisation_id: string
   organisation_code: string
-  grade_code: string
-  grade_name: string
+  grade: string
   profession: string
   state: string
   last_updated: string

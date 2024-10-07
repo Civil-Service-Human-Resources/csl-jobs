@@ -7,6 +7,8 @@ export interface ICourseCompletion extends RowDataPacket {
   organisation: string
   organisation_id: string
   organisation_code: string
+  grade_code: string
+  grade_name: string
   profession: string
   course_id: string
   course_title: string

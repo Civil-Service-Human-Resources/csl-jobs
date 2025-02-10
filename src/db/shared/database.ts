@@ -10,14 +10,14 @@ const getCourseCompletionSQL = (): string => {
     ou.name as organisation,
     ou.id as organisationId,
     ou.code as organisationCode,
-    g.code as grade_code,
-    g.name as grade_name,
     p.name as profession,
     cr.course_id as course_id,
     cr.course_title as course_title,
     cr.state as state,
     DATE_FORMAT(cr.last_updated, "%Y-%m-%d %T") as last_updated,
-    cr.is_required as is_required
+    cr.is_required as is_required,
+    g.code as grade_code,
+    g.name as grade_name
   from learner_record.course_record cr
   inner join identity.identity i on cr.user_id = i.uid
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid

@@ -7,14 +7,14 @@ export interface ICourseCompletion extends RowDataPacket {
   organisation: string
   organisation_id: string
   organisation_code: string
-  grade_code: string
-  grade_name: string
   profession: string
   course_id: string
   course_title: string
   state: string
   last_updated: string
   is_required: boolean
+  grade_code: string
+  grade_name: string
 }
 
 export interface IAnonymousCourseRecord extends RowDataPacket {

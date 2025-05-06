@@ -23,7 +23,7 @@ const getCourseCompletionSQL = (): string => {
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
   inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id
   join csrs.profession p on cs.profession_id = p.id
-  join csrs.grade g on cs.grade_id = g.id
+  left join csrs.grade g on cs.grade_id = g.id
   join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
   where state = 'COMPLETED'
   and cr.last_updated between ? and ?
@@ -47,7 +47,7 @@ const getCourseRecordSQL = (): string => {
   inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
   inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id
   join csrs.profession p on cs.profession_id = p.id
-  join csrs.grade g on cs.grade_id = g.id
+  left join csrs.grade g on cs.grade_id = g.id
   join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
   where state in ('COMPLETED', 'IN_PROGRESS')
   and cr.last_updated between ? and ?

@@ -3,7 +3,7 @@ import config from '../config'
 import { JobType } from '../service/job/JobType'
 import { runJob } from '../service/job/jobService'
 
-const { jobs: { obtStats: { cron } } } = config
+const { jobs: { obtStats: { cron, runOnStartup } } } = config
 
 export async function obtstats (
   myTimer: Timer,
@@ -14,5 +14,6 @@ export async function obtstats (
 
 app.timer('obtStats', {
   schedule: cron,
-  handler: obtstats
+  handler: obtstats,
+  runOnStartup
 })

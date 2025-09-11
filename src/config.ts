@@ -33,7 +33,8 @@ const config = {
       defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1W',
       notifyTemplate: env.NOTIFY_COURSE_COMPLETION_TEMPLATE ?? '',
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
-      emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')
+      emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(','),
+      runOnStartup: JSON.parse(env.COURSE_COMPLETIONS_RUN_ON_STARTUP ?? 'false') as boolean
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
@@ -46,7 +47,8 @@ const config = {
       defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1D',
       bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
-      courseIds: (env.OBT_COURSE_IDS ?? '').split(',')
+      courseIds: (env.OBT_COURSE_IDS ?? '').split(','),
+      runOnStartup: JSON.parse(env.OBT_STATS_RUN_ON_STARTUP ?? 'false') as boolean
     }
   },
   notifications: {

@@ -32,27 +32,28 @@ const getCourseCompletionSQL = (): string => {
 
 const getCourseRecordSQL = (): string => {
   return `select
-    concat(cr.course_id, '-', cr.user_id) as id,
-    cr.user_id as user_id,
-    cr.course_id as course_id,
-    cr.course_title as course_title,
-    ou.name as organisation,
-    ou.id as organisation_id,
-    ou.code as organisation_code,
-    g.name as grade,
-    p.name as profession,
-    cr.state as state,
-    cr.last_updated as last_updated
-  from learner_record.course_record cr
-  inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
-  inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id
-  join csrs.profession p on cs.profession_id = p.id
-  left join csrs.grade g on cs.grade_id = g.id
-  join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
-  where state in ('COMPLETED', 'IN_PROGRESS')
-  and cr.last_updated between ? and ?
-  and cr.course_id in (?)
-  order by last_updated desc, user_id, course_id;`
+          concat(cr.course_id, '-', cr.user_id) as id,
+          cr.user_id as user_id,
+          cr.course_id as course_id,
+          cr.course_title as course_title,
+          ou.name as organisation,
+          ou.id as organisation_id,
+          ou.code as organisation_code,
+          g.name as grade,
+          p.name as profession,
+          IF(cr.state = 'COMPLETED', 'COMPLETED', 'IN_PROGRESS') as state,
+          cr.last_updated as last_updated
+      from learner_record.course_record cr
+               inner join csrs.identity csrs_id on cr.user_id = csrs_id.uid
+               inner join csrs.civil_servant cs on csrs_id.id = cs.identity_id
+               join csrs.profession p on cs.profession_id = p.id
+               left join csrs.grade g on cs.grade_id = g.id
+               join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
+               inner join learner_record.module_record mr on cr.user_id = mr.user_id and cr.course_id = mr.course_id
+          and cr.last_updated between ? and ?
+          and cr.course_id in (?)
+      group by cr.user_id, cr.course_id
+      order by last_updated desc, user_id, course_id;`
 }
 
 export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): Promise<ICourseCompletion[]> => {

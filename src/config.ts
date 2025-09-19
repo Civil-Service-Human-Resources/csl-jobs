@@ -35,6 +35,15 @@ const config = {
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')
     },
+    skillsCompletedLearnerRecords: {
+      cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
+      runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
+      sftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
+      sftpPort: env.SKILLS_SYNC_SFTP_PORT ?? '22',
+      sftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'sftpUsername',
+      sftpPassword: env.SKILLS_SYNC_SFTP_PASSWORD ?? 'sftpPassword',
+      emailIds: env.EMAIL_IDS ?? 'abc1@xyz.com,abc2@xyz.com'
+    },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
       notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',

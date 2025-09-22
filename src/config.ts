@@ -37,6 +37,7 @@ const config = {
     },
     skillsCompletedLearnerRecords: {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
+      defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       sftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
       sftpPort: env.SKILLS_SYNC_SFTP_PORT ?? '22',

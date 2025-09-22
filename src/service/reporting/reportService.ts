@@ -1,7 +1,7 @@
 import * as azureBlobService from '../azure/storage/blob/service'
 import { type UploadResult } from '../azure/storage/blob/service'
 import { JobsFile } from '../file/models'
-import { getCompletedCourseRecords } from '../../db/shared/database'
+import {getCompletedCourseRecords, getSkillsCompletedLearnerRecords} from '../../db/shared/database'
 import { objsToCsv } from '../file/csv'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
 import dayjs from 'dayjs'
@@ -44,6 +44,23 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
     const uploadResult = await uploadFile(zipFile.result)
     return {
       zip: zipFile,
+      uploadResult
+    }
+  } else {
+    return undefined
+  }
+}
+
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (emailIds: string[], lastSuccessTimestamp: Date, toTimestamp: Date): Promise<string> => {
+  const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
+  if (completions.length > 0) {
+    const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
+    const csv = await objsToCsv(completions)
+    const csvFile = JobsFile.from(`${fileName}.csv`, csv)
+    // TODO:
+    const uploadResult = await uploadFileToSftp(csvFile)
+    return {
+      csvFile,
       uploadResult
     }
   } else {

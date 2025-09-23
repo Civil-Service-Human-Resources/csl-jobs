@@ -8,8 +8,8 @@ import dayjs from 'dayjs'
 import * as learnerRecordService from '../learnerRecord/service'
 import * as awsService from '../aws/s3/service'
 import { uploadToSftp } from '../sftp/service'
-// import * as fs from 'fs/promises'
-// import path from 'path'
+import * as fs from 'fs/promises'
+import path from 'path'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -61,15 +61,21 @@ Promise<{ csvFile: JobsFile }> => {
   const csv = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${fileName}.csv`, csv)
 
-  // If local tmp directory to be used
-  // const localFilePath = path.join('/tmp', csvFile.filename)
-  // await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
-  // await uploadToSftp(localFilePath)
+  // Storing the csv file in blob storage for the record
+  await uploadFile(csvFile)
 
-  // If azure blob storage to be used
-  const uploadResult = await uploadFile(csvFile)
-  await uploadToSftp(uploadResult.link)
+  // Upload to SFTP
+  const localFilePath = path.join('/tmp', csvFile.filename)
+  await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
+  await uploadToSftp(localFilePath)
 
+  // Delete the CSV file from the tmp folder
+  try {
+    await fs.unlink(localFilePath)
+    console.log(`Deleted temporary file: ${localFilePath}`)
+  } catch (err) {
+    console.error(`Failed to delete temporary file ${localFilePath}:`, err)
+  }
   return { csvFile }
 }
 

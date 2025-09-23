@@ -1,12 +1,15 @@
 import * as azureBlobService from '../azure/storage/blob/service'
 import { type UploadResult } from '../azure/storage/blob/service'
 import { JobsFile } from '../file/models'
-import {getCompletedCourseRecords, getSkillsCompletedLearnerRecords} from '../../db/shared/database'
+import { getCompletedCourseRecords, getSkillsCompletedLearnerRecords } from '../../db/shared/database'
 import { objsToCsv } from '../file/csv'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
 import dayjs from 'dayjs'
 import * as learnerRecordService from '../learnerRecord/service'
 import * as awsService from '../aws/s3/service'
+import { uploadToSftp } from '../sftp/service'
+import * as fs from 'fs/promises'
+import path from 'path'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -51,20 +54,18 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (emailIds: string[], lastSuccessTimestamp: Date, toTimestamp: Date): Promise<string> => {
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (emailIds: string[], lastSuccessTimestamp: Date, toTimestamp: Date):
+Promise<{ csvFile: JobsFile, uploadResult: void } | undefined> => {
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
-  if (completions.length > 0) {
-    const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
-    const csv = await objsToCsv(completions)
-    const csvFile = JobsFile.from(`${fileName}.csv`, csv)
-    // TODO:
-    const uploadResult = await uploadFileToSftp(csvFile)
-    return {
-      csvFile,
-      uploadResult
-    }
-  } else {
-    return undefined
+  const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
+  const csv = await objsToCsv(completions)
+  const csvFile = JobsFile.from(`${fileName}.csv`, csv)
+  const localFilePath = path.join('/tmp', csvFile.filename)
+  await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
+  const uploadResult = await uploadToSftp(localFilePath)
+  return {
+    csvFile,
+    uploadResult
   }
 }
 

@@ -1,14 +1,13 @@
 import { createSftpConnection } from './connection'
 import config from '../../config'
 
-async function uploadToSftp (localFile?: string, remoteDir?: string) {
+export const uploadToSftp = async (csvFile: string): Promise<void> => {
   const sftp = await createSftpConnection()
-  const localFilePath = localFile || 'test-file.txt'
-  const remoteDirectory = remoteDir || config.sftp.skillsSftpRemoteDir
-  const remoteFilePath = `${remoteDirectory}/${localFilePath}`
+  const remoteDirectory = config.sftp.skillsSftpRemoteDir
+  const remoteFilePath = `${remoteDirectory}/${csvFile}`
   try {
-    console.log(`Uploading ${localFilePath} to ${remoteFilePath}...`)
-    await sftp.put(localFilePath, remoteFilePath)
+    console.log(`Uploading ${csvFile} to ${remoteFilePath}...`)
+    await sftp.put(csvFile, remoteFilePath)
     console.log(`File uploaded to ${remoteFilePath}`)
   } catch (err) {
     console.error('Error uploading file:', err)

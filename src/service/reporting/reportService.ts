@@ -8,8 +8,8 @@ import dayjs from 'dayjs'
 import * as learnerRecordService from '../learnerRecord/service'
 import * as awsService from '../aws/s3/service'
 import { uploadToSftp } from '../sftp/service'
-import * as fs from 'fs/promises'
-import path from 'path'
+// import * as fs from 'fs/promises'
+// import path from 'path'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -60,9 +60,16 @@ Promise<{ csvFile: JobsFile }> => {
   const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
   const csv = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${fileName}.csv`, csv)
-  const localFilePath = path.join('/tmp', csvFile.filename)
-  await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
-  await uploadToSftp(localFilePath)
+
+  // If local tmp directory to be used
+  // const localFilePath = path.join('/tmp', csvFile.filename)
+  // await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
+  // await uploadToSftp(localFilePath)
+
+  // If azure blob storage to be used
+  const uploadResult = await uploadFile(csvFile)
+  await uploadToSftp(uploadResult.link)
+
   return { csvFile }
 }
 

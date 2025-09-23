@@ -39,10 +39,6 @@ const config = {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      sftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
-      sftpPort: env.SKILLS_SYNC_SFTP_PORT ?? '22',
-      sftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'sftpUsername',
-      sftpPassword: env.SKILLS_SYNC_SFTP_PASSWORD ?? 'sftpPassword',
       emailIds: env.EMAIL_IDS ?? 'abc1@xyz.com,abc2@xyz.com'
     },
     orgDomains: {
@@ -89,6 +85,13 @@ const config = {
         defaultDaysToKeepDownloadLinksActive: parseInt(env.AZURE_BLOB_DAYS_TO_KEEP_LINKS_ACTIVE ?? '7')
       }
     }
+  },
+  sftp: {
+    skillsSftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
+    skillsSftpPort: env.SKILLS_SYNC_SFTP_PORT ?? 22,
+    skillsSftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'sftpUsername',
+    skillsSftpPassword: env.SKILLS_SYNC_SFTP_PASSWORD ?? 'sftpPassword',
+    skillsSftpRemoteDir: env.SKILLS_SYNC_SFTP_REMOTE_DIR ?? '/upload'
   }
 }
 

@@ -55,18 +55,15 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 }
 
 export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (emailIds: string[], lastSuccessTimestamp: Date, toTimestamp: Date):
-Promise<{ csvFile: JobsFile } | undefined> => {
+Promise<{ csvFile: JobsFile }> => {
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
-  if (completions.length === 0) return undefined
   const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
-  const csv = await objsToCsv(completions)
+  const csv = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${fileName}.csv`, csv)
   const localFilePath = path.join('/tmp', csvFile.filename)
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
   await uploadToSftp(localFilePath)
-  return {
-    csvFile
-  }
+  return { csvFile }
 }
 
 export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimestamp: Date): string => {

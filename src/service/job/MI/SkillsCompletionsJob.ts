@@ -14,8 +14,7 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
     log.info('Getting skills completions learner records')
     let resultText: string
     const dates = await this.getFromAndToDates()
-    const emailIds = []
-    const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(emailIds, dates.fromDate, dates.toDate)
+    const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(dates.fromDate, dates.toDate)
     if (csvUploadResult !== undefined) {
       resultText = `Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`
     } else {

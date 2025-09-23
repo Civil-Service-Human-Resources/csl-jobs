@@ -88,10 +88,11 @@ const config = {
   },
   sftp: {
     skillsSftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
-    skillsSftpPort: parseInt(env.SKILLS_SYNC_SFTP_PORT ?? '22'),
-    skillsSftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'sftpUsername',
-    skillsSftpPassword: env.SKILLS_SYNC_SFTP_PASSWORD ?? 'sftpPassword',
-    skillsSftpRemoteDir: env.SKILLS_SYNC_SFTP_REMOTE_DIR ?? '/upload'
+    skillsSftpPort: parseInt(env.SKILLS_SYNC_SFTP_PORT ?? '2222'),
+    skillsSftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'foo',
+    skillsSftpPassword: env.SKILLS_SYNC_SFTP_PASSWORD ?? 'pass',
+    skillsSftpRemoteDir: env.SKILLS_SYNC_SFTP_REMOTE_DIR ?? '/upload',
+    skillsSftpLocalDir: env.SKILLS_SYNC_SFTP_LOCAL_DIR ?? '/tmp'
   }
 }
 

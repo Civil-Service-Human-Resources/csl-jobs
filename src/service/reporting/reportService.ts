@@ -11,6 +11,7 @@ import { uploadToSftp } from '../sftp/service'
 import * as fs from 'fs/promises'
 import path from 'path'
 import log from 'log'
+import config from '../../config'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -55,20 +56,24 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (emailIds: string[], lastSuccessTimestamp: Date, toTimestamp: Date):
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: Date, toTimestamp: Date):
 Promise<{ csvFile: JobsFile }> => {
+  const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
-  const fileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp)
-  const csv = await objsToCsv(completions.length > 0 ? completions : [])
-  const csvFile = JobsFile.from(`${fileName}.csv`, csv)
+  const csvFileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp) + '.csv'
+  const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
+  const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
 
   // Storing the csv file in blob storage for the record
   await uploadFile(csvFile)
 
-  // Upload to SFTP
-  const localFilePath = path.join('/tmp', csvFile.filename)
+  // Write to local folder
+  const localDir = config.sftp.skillsSftpLocalDir
+  const localFilePath = path.join(localDir, csvFileName)
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
-  await uploadToSftp(localFilePath)
+
+  // Upload to SFTP
+  await uploadToSftp(localFilePath, csvFileName)
 
   // Delete the CSV file from the tmp folder
   try {

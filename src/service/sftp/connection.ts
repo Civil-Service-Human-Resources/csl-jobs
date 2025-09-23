@@ -1,6 +1,7 @@
 import SftpClient from 'ssh2-sftp-client'
 import config from '../../config'
 import * as fs from 'fs'
+import log from 'log'
 
 export interface SftpConfig {
   host: string
@@ -23,7 +24,7 @@ export function getSftpConfig (): SftpConfig {
 export async function createSftpConnection (connectionConfig: SftpConfig = getSftpConfig()
 ): Promise<SftpClient> {
   const sftp = new SftpClient()
-  console.log('Connecting...')
+  log.info('Connecting...')
   await sftp.connect(connectionConfig)
   return sftp
 }

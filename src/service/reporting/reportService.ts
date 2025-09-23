@@ -10,6 +10,7 @@ import * as awsService from '../aws/s3/service'
 import { uploadToSftp } from '../sftp/service'
 import * as fs from 'fs/promises'
 import path from 'path'
+import log from 'log'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -72,9 +73,9 @@ Promise<{ csvFile: JobsFile }> => {
   // Delete the CSV file from the tmp folder
   try {
     await fs.unlink(localFilePath)
-    console.log(`Deleted temporary file: ${localFilePath}`)
+    log.info(`Deleted temporary file: ${localFilePath}`)
   } catch (err) {
-    console.error(`Failed to delete temporary file ${localFilePath}:`, err)
+    log.error(`Failed to delete temporary file ${localFilePath}:`, err)
   }
   return { csvFile }
 }

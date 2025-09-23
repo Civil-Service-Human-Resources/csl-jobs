@@ -56,72 +56,64 @@ const getCourseRecordSQL = (): string => {
 }
 
 const getSkillsCompletedLearnerRecordsSQL = (): string => {
-  return `select 'Create' as type,
-                 i.email as emailAddress,
-                 '' as cei,
-                 lr.resource_id as contentId,
-                 case
-                   when min(lre.event_timestamp) is not null then 100
-                   else 0
-                   end as progress,
-                 case
-                   when min(lre.event_timestamp) is not null then "True"
-                   else "False"
-                   end as isCompleted,
-                 '' as result,
-                 coalesce(
-                     case
-                       when min(lre.event_timestamp) is not null
-                         then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
-                       end, ''
-                   ) as timeSpent,
-                 coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
-                 coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
-          from learner_record.learner_records lr
-                 left join learner_record.learner_record_events lre
-                           on lre.learner_record_id = lr.id
-                             and lre.learner_record_event_type = 4
-                 join identity.identity i
-                      on i.uid = lr.learner_id
-          where i.email in (?)
-            and lre.event_timestamp is not null
-          group by i.email, lr.resource_id
-          order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
+  return `select
+    'Create' as type,
+    i.email as emailAddress,
+    '' as cei,
+    lr.resource_id as contentId,
+    case
+        when min(lre.event_timestamp) is not null then 100
+        else 0
+        end as progress,
+    case
+        when min(lre.event_timestamp) is not null then "True"
+        else "False"
+        end as isCompleted,
+    '' as result,
+    coalesce(
+        case
+            when min(lre.event_timestamp) is not null
+                then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
+            end, '') as timeSpent,
+    coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
+    coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
+  from learner_record.learner_records lr
+      left join learner_record.learner_record_events lre on lre.learner_record_id = lr.id and lre.learner_record_event_type = 4
+      join identity.identity i on i.uid = lr.learner_id
+  where i.email in (?)
+    and lre.event_timestamp is not null
+  group by i.email, lr.resource_id
+  order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
 }
 
 const getSkillsDeltaCompletedLearnerRecordsSQL = (): string => {
-  return `select 'Create' as type,
-                 i.email as emailAddress,
-                 '' as cei,
-                 lr.resource_id as contentId,
-                 case
-                   when min(lre.event_timestamp) is not null then 100
-                   else 0
-                   end as progress,
-                 case
-                   when min(lre.event_timestamp) is not null then "True"
-                   else "False"
-                   end as isCompleted,
-                 '' as result,
-                 coalesce(
-                     case
-                       when min(lre.event_timestamp) is not null
-                         then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
-                       end, ''
-                   ) as timeSpent,
-                 coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
-                 coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
-          from learner_record.learner_records lr
-                 join learner_record.learner_record_events lre
-                      on lre.learner_record_id = lr.id
-                        and lre.learner_record_event_type = 4
-                        and lre.event_timestamp > ?
-                 join identity.identity i
-                      on i.uid = lr.learner_id
-          where i.email in (?)
-            and lre.event_timestamp is not null
-          group by i.email, lr.resource_id
-          order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
+  return `select
+    'Create' as type,
+    i.email as emailAddress,
+    '' as cei,
+    lr.resource_id as contentId,
+    case
+        when min(lre.event_timestamp) is not null then 100
+        else 0
+        end as progress,
+    case
+        when min(lre.event_timestamp) is not null then "True"
+        else "False"
+        end as isCompleted,
+    '' as result,
+    coalesce(
+        case
+            when min(lre.event_timestamp) is not null
+                then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
+            end, '') as timeSpent,
+    coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
+    coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
+  from learner_record.learner_records lr
+      join learner_record.learner_record_events lre on lre.learner_record_id = lr.id and lre.learner_record_event_type = 4 and lre.event_timestamp > ?
+      join identity.identity i on i.uid = lr.learner_id
+  where i.email in (?) and lre.event_timestamp is not null
+  group by i.email, lr.resource_id
+  order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
 }
 
 export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp: Date): Promise<ISkillsLearnerRecord[]> => {

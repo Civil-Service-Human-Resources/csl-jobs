@@ -122,7 +122,7 @@ export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastR
   if (lastRunTimestamp == null) {
     return await fetchRows<ISkillsLearnerRecord>(SQL, [emailIds])
   }
-  return await fetchRows<ISkillsLearnerRecord>(SQL_DELTA, [emailIds, lastRunTimestamp.toISOString()])
+  return await fetchRows<ISkillsLearnerRecord>(SQL_DELTA, [lastRunTimestamp.toISOString(), emailIds])
 }
 
 export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): Promise<ICourseCompletion[]> => {

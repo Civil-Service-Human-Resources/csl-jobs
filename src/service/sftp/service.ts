@@ -12,6 +12,6 @@ export const uploadToSftp = async (csvFile: string): Promise<void> => {
   } catch (err) {
     console.error('Error uploading file:', err)
   } finally {
-    sftp.end()
+    await sftp.end()
   }
 }

@@ -7,7 +7,7 @@ import { TableDateRangeJob } from './TableDateRangeJob'
 
 export class SkillsCompletionsJob extends TableDateRangeJob {
   constructor (protected readonly notificationClient: NotificationClient, protected readonly defaultFallbackDuration: string) {
-    super(notificationClient, 'skillsCompletions', defaultFallbackDuration)
+    super(notificationClient, 'skillsSync', defaultFallbackDuration)
   }
 
   protected async runJob (): Promise<JobResult> {

@@ -1,14 +1,14 @@
 import SftpClient from 'ssh2-sftp-client'
 import config from '../../config'
-// import * as fs from 'fs'
+import * as fs from 'fs'
 import log from 'log'
 
 export interface SftpConfig {
   host: string
   port: number
   username: string
-  password: string
-  // privateKey: Buffer
+  // password: string
+  privateKey: Buffer
 }
 
 export function getSftpConfig (): SftpConfig {
@@ -16,8 +16,8 @@ export function getSftpConfig (): SftpConfig {
     host: config.sftp.skillsSftpHost,
     port: config.sftp.skillsSftpPort,
     username: config.sftp.skillsSftpUsername,
-    password: config.sftp.skillsSftpPassword
-    // privateKey: fs.readFileSync('/ssh/id_ed25519')
+    // password: config.sftp.skillsSftpPassword
+    privateKey: fs.readFileSync(config.sftp.skillsSftpPrivateKey)
   }
 }
 

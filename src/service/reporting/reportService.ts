@@ -13,6 +13,7 @@ import path from 'path'
 import log from 'log'
 import config from '../../config'
 import { type CustomDate } from '../date/CustomDate'
+import * as tableService from '../azure/storage/table/service'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -59,7 +60,10 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 
 export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: CustomDate | undefined):
 Promise<{ csvFile: JobsFile }> => {
-  const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
+  // const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const emailIds = await tableService.getJobData('skillsSync', 'emailIds').split(',')
   const csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
   const csvFileName = getCurrentTimeFileName(csvFilenamePrefix) + '.csv'
   log.info(`csvFileName: ${csvFileName}`)

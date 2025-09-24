@@ -63,14 +63,17 @@ Promise<{ csvFile: JobsFile }> => {
   const csvFileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp) + '.csv'
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
+  log.info(`csvFileName: ${csvFileName}`)
 
   // Storing the csv file in blob storage for the record
   await uploadFile(csvFile)
+  log.info(`csv file uploaded to Azure Blob Storage: ${csvFileName}`)
 
   // Write to local folder
   const localDir = config.sftp.skillsSftpLocalDir
   const localFilePath = path.join(localDir, csvFileName)
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
+  log.info(`Local temporary file written: ${localFilePath}`)
 
   // Upload to SFTP
   await uploadToSftp(localFilePath, csvFileName)

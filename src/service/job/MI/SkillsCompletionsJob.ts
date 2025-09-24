@@ -12,15 +12,17 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
 
   protected async runJob (): Promise<JobResult> {
     log.info('Getting skills completions learner records')
+    const currentTimeStamp = new Date().toISOString()
+    log.info(`Data extract timeStamp: '${currentTimeStamp}'`)
+    const lastSuccessTimestamp = await tableService.getDateFromTable(this.tablePartitionKey, 'lastReportTimestamp')
+    const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(lastSuccessTimestamp)
     let resultText: string
-    const dates = await this.getFromAndToDates()
-    const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(dates.fromDate, dates.toDate)
     if (csvUploadResult !== undefined) {
       resultText = `Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`
     } else {
       resultText = 'Found 0 course completions for the specified time period'
     }
-    await tableService.upsertJobData('skillsCompletions', 'lastReportTimestamp', dates.toDate.toISOString())
+    await tableService.upsertJobData(this.tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
     return {
       text: resultText
     }

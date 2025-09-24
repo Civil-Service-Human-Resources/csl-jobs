@@ -1,6 +1,8 @@
 import type { IOrganisationDomain } from '../../service/orgDomains/model/IOrganisationDomain'
 import { fetchRows } from '../connection'
 import type { IAnonymousCourseRecord, ICourseCompletion, IOrganisation, ISkillsLearnerRecord } from './model'
+import type { CustomDate } from '../../service/date/CustomDate'
+import log from 'log'
 
 const getCourseCompletionSQL = (): string => {
   return `select
@@ -116,12 +118,14 @@ const getSkillsDeltaCompletedLearnerRecordsSQL = (): string => {
   order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
 }
 
-export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp: Date): Promise<ISkillsLearnerRecord[]> => {
+export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp: CustomDate | undefined): Promise<ISkillsLearnerRecord[]> => {
   const SQL = getSkillsCompletedLearnerRecordsSQL()
   const SQL_DELTA = getSkillsDeltaCompletedLearnerRecordsSQL()
-  if (lastRunTimestamp == null) {
+  if (lastRunTimestamp === undefined) {
+    log.info('lastRunTimestamp is not available therefore running initial full load')
     return await fetchRows<ISkillsLearnerRecord>(SQL, [emailIds])
   }
+  log.info(`lastRunTimestamp: '${lastRunTimestamp.toISOString()}' is available therefore running delta load`)
   return await fetchRows<ISkillsLearnerRecord>(SQL_DELTA, [lastRunTimestamp.toISOString(), emailIds])
 }
 

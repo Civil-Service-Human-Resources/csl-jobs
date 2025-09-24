@@ -12,6 +12,7 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import log from 'log'
 import config from '../../config'
+import { type CustomDate } from '../date/CustomDate'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -56,14 +57,15 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: Date, toTimestamp: Date):
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: CustomDate | undefined):
 Promise<{ csvFile: JobsFile }> => {
   const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
+  const csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
+  const csvFileName = getCurrentTimeFileName(csvFilenamePrefix) + '.csv'
+  log.info(`csvFileName: ${csvFileName}`)
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
-  const csvFileName = getTimeRangeFileName('skills_completed_lr', lastSuccessTimestamp, toTimestamp) + '.csv'
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
-  log.info(`csvFileName: ${csvFileName}`)
 
   // Storing the csv file in blob storage for the record
   await uploadFile(csvFile)
@@ -93,4 +95,10 @@ export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimes
   const startFmt = dayjs(startTimestamp).format(formatTokens)
   const endFmt = dayjs(endTimestamp).format(formatTokens)
   return `${key}_${startFmt}_to_${endFmt}`
+}
+
+export const getCurrentTimeFileName = (key: string): string => {
+  const formatTokens = 'YYYY_MM_DD_HHmmss'
+  const currentFmt = dayjs().format(formatTokens)
+  return `${key}_${currentFmt}`
 }

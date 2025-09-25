@@ -39,8 +39,8 @@ const config = {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      csvFilenamePrefix: env.CSV_FILENAME_PREFIX ?? 'skills_completed_lr',
-      emailIds: env.EMAIL_IDS ?? 'abc1@xyz.com,abc2@xyz.com'
+      csvFilenamePrefix: env.CSV_FILENAME_PREFIX ?? 'skills_completed_lr'
+      // emailIds: env.EMAIL_IDS ?? 'abc1@xyz.com,abc2@xyz.com'
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',

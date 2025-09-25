@@ -29,6 +29,6 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
   }
 
   public getName (): string {
-    return 'Course completions report'
+    return 'Skills completions extract'
   }
 }

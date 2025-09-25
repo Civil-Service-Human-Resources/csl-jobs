@@ -61,7 +61,6 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 
 export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: CustomDate | undefined):
 Promise<{ csvFile: JobsFile }> => {
-  // const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')

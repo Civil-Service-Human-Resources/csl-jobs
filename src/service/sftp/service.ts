@@ -2,8 +2,8 @@ import { createSftpConnection } from './connection'
 import config from '../../config'
 import log from 'log'
 
-export const uploadToSftp = async (localFilePath: string, csvFileName: string): Promise<void> => {
-  const sftp = await createSftpConnection()
+export const uploadToSftp = async (localFilePath: string, csvFileName: string, sshPrivateKey: string | undefined): Promise<void> => {
+  const sftp = await createSftpConnection(sshPrivateKey)
   const remoteDirectory = config.sftp.skillsSftpRemoteDir
   const remoteFilePath = `${remoteDirectory}/${csvFileName}`
   try {

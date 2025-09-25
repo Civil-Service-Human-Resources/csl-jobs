@@ -14,6 +14,7 @@ import log from 'log'
 import config from '../../config'
 import { type CustomDate } from '../date/CustomDate'
 import * as tableService from '../azure/storage/table/service'
+import os from 'os'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -76,13 +77,14 @@ Promise<{ csvFile: JobsFile }> => {
   log.info(`csv file uploaded to Azure Blob Storage: ${csvFileName}`)
 
   // Write to local folder
-  const localDir = config.sftp.skillsSftpLocalDir
-  const localFilePath = path.join(localDir, csvFileName)
+  const localTempDir = os.tmpdir()
+  const localFilePath = path.join(localTempDir, csvFileName)
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
   log.info(`Local temporary file written: ${localFilePath}`)
 
+  const privateKeyContent = await tableService.getJobData('skillsSync', config.sftp.skillsSftpSshPrivateKey)
   // Upload to SFTP
-  await uploadToSftp(localFilePath, csvFileName)
+  await uploadToSftp(localFilePath, csvFileName, privateKeyContent)
 
   // Delete the CSV file from the tmp folder
   try {

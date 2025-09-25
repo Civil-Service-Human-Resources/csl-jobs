@@ -90,7 +90,6 @@ const config = {
     skillsSftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
     skillsSftpPort: parseInt(env.SKILLS_SYNC_SFTP_PORT ?? '2222'),
     skillsSftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'foo',
-    skillsSftpSshPrivateKey: env.SKILLS_SYNC_SFTP_SSH_PRIVATE_KEY ?? 'sshPrivateKey',
     skillsSftpRemoteDir: env.SKILLS_SYNC_SFTP_REMOTE_DIR ?? '/upload'
   }
 }

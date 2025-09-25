@@ -81,9 +81,9 @@ Promise<{ csvFile: JobsFile }> => {
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
   log.info(`Local temporary file written: ${localFilePath}`)
 
-  const privateKeyContent = await tableService.getJobData('skillsSync', config.sftp.skillsSftpSshPrivateKey)
+  const sshPrivateKey = await tableService.getJobData('skillsSync', 'sshPrivateKey')
   // Upload to SFTP
-  await uploadToSftp(localFilePath, csvFileName, privateKeyContent)
+  await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
 
   // Delete the CSV file from the tmp folder
   try {

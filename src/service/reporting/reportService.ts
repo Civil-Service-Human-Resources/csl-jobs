@@ -63,7 +63,7 @@ Promise<{ csvFile: JobsFile }> => {
   // const emailIds = config.jobs.skillsCompletedLearnerRecords.emailIds.split(',')
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
-  const emailIds = await tableService.getJobData('skillsSync', 'emailIds').split(',')
+  const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')
   const csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
   const csvFileName = getCurrentTimeFileName(csvFilenamePrefix) + '.csv'
   log.info(`csvFileName: ${csvFileName}`)

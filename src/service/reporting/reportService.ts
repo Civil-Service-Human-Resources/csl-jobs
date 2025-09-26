@@ -64,8 +64,13 @@ Promise<{ csvFile: JobsFile }> => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')
-  const csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
-  const csvFileName = getCurrentTimeFileName(csvFilenamePrefix) + '.csv'
+  let csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
+  if (lastSuccessTimestamp === undefined) {
+    csvFilenamePrefix = `${csvFilenamePrefix}_Create`
+  } else {
+    csvFilenamePrefix = `${csvFilenamePrefix}_Update`
+  }
+  const csvFileName = getCurrentDateFileName(csvFilenamePrefix) + '.csv'
   log.info(`csvFileName: ${csvFileName}`)
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
@@ -102,8 +107,8 @@ export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimes
   return `${key}_${startFmt}_to_${endFmt}`
 }
 
-export const getCurrentTimeFileName = (key: string): string => {
-  const formatTokens = 'YYYY_MM_DD_HHmmss'
+export const getCurrentDateFileName = (key: string): string => {
+  const formatTokens = 'DDMMYYYY'
   const currentFmt = dayjs().format(formatTokens)
   return `${key}_${currentFmt}`
 }

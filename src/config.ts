@@ -35,6 +35,12 @@ const config = {
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')
     },
+    skillsCompletedLearnerRecords: {
+      cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
+      defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
+      runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
+      csvFilenamePrefix: env.SKILLS_SYNC_CSV_FILENAME_PREFIX ?? 'skills_completed_lr'
+    },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
       notifyTemplate: env.ORG_DOMAINS_EMAIL_TEMPLATE ?? '',
@@ -79,6 +85,12 @@ const config = {
         defaultDaysToKeepDownloadLinksActive: parseInt(env.AZURE_BLOB_DAYS_TO_KEEP_LINKS_ACTIVE ?? '7')
       }
     }
+  },
+  sftp: {
+    skillsSftpHost: env.SKILLS_SYNC_SFTP_HOST ?? 'localhost',
+    skillsSftpPort: parseInt(env.SKILLS_SYNC_SFTP_PORT ?? '2222'),
+    skillsSftpUsername: env.SKILLS_SYNC_SFTP_USERNAME ?? 'foo',
+    skillsSftpRemoteDir: env.SKILLS_SYNC_SFTP_REMOTE_DIR ?? '/upload'
   }
 }
 

@@ -3,6 +3,7 @@ import { getNotificationClient } from '../notification/notifications'
 import { JobType } from './JobType'
 import { type Job } from './Job'
 import { CourseCompletionsJob } from './MI/CourseCompletionsJob'
+import { SkillsCompletionsJob } from './MI/SkillsCompletionsJob'
 import config from '../../config'
 import { ClearRedundantTokensJob } from './identity/ClearRedundantTokensJob'
 import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
@@ -20,6 +21,9 @@ export const runJob = async (jobType: JobType): Promise<void> => {
   switch (jobType) {
     case JobType.COURSE_COMPLETIONS:
       job = new CourseCompletionsJob(notificationClient, config.jobs.courseCompletions.defaultFallbackPeriod)
+      break
+    case JobType.SKILLS_COMPLETED_LEARNER_RECORDS:
+      job = new SkillsCompletionsJob(notificationClient, config.jobs.skillsCompletedLearnerRecords.defaultFallbackPeriod)
       break
     case JobType.REDUNDANT_TOKEN:
       job = new ClearRedundantTokensJob(notificationClient)

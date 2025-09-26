@@ -36,3 +36,16 @@ export interface IOrganisation extends RowDataPacket {
   name: string
   parent_id: number | null
 }
+
+export interface ISkillsLearnerRecord extends RowDataPacket {
+  type: string
+  emailAddress: string
+  cei: string
+  contentId: string
+  progress: string
+  isCompleted: string
+  result: string
+  timeSpent: number
+  enrollmentDate: string
+  completionDate: string
+}

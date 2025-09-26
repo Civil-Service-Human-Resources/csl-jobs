@@ -64,11 +64,11 @@ Promise<{ csvFile: JobsFile }> => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')
-  let csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefix
+  let csvFilenamePrefix
   if (lastSuccessTimestamp === undefined) {
-    csvFilenamePrefix = `${csvFilenamePrefix}_Create`
+    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixCreate
   } else {
-    csvFilenamePrefix = `${csvFilenamePrefix}_Update`
+    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixUpdate
   }
   const csvFileName = getCurrentDateFileName(csvFilenamePrefix) + '.csv'
   log.info(`csvFileName: ${csvFileName}`)

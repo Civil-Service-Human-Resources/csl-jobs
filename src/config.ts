@@ -39,7 +39,8 @@ const config = {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      csvFilenamePrefix: env.SKILLS_SYNC_CSV_FILENAME_PREFIX ?? 'skills_completed_lr'
+      csvFilenamePrefixCreate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_CREATE ?? 'ER_Create',
+      csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update'
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',

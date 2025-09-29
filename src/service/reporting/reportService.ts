@@ -23,6 +23,12 @@ interface UploadedZipReport {
   uploadResult: UploadResult
 }
 
+interface SkillsCompletedLearnerRecordsFileDetails {
+  operation: string | undefined
+  date: string | undefined
+  sequenceNumber: string | undefined
+}
+
 const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
   return await azureBlobService.uploadFile(MI_BLOB_CONTAINER, file)
 }
@@ -61,29 +67,31 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 
 export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: CustomDate | undefined):
 Promise<{ csvFile: JobsFile }> => {
+  const lastFile: SkillsCompletedLearnerRecordsFileDetails = {
+    operation: await tableService.getJobData('skillsSync', 'lastFileOperation'),
+    date: await tableService.getJobData('skillsSync', 'lastFileDate'),
+    sequenceNumber: await tableService.getJobData('skillsSync', 'lastFileSequenceNumber')
+  }
+
+  // Defining csv filename
+  const newFormattedDate = dayjs().format('DDMMYYYY')
+  const newSequenceNumber = ((lastFile.sequenceNumber != null) && (lastFile.date != null) && newFormattedDate === lastFile.date) ? parseInt(lastFile.sequenceNumber) + 1 : 1
+  lastFile.date = newFormattedDate
+  lastFile.sequenceNumber = newSequenceNumber.toString()
+  let csvFilenamePrefix: string
+  if (lastSuccessTimestamp === undefined) {
+    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixCreate
+    lastFile.operation = 'create'
+  } else {
+    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixUpdate
+    lastFile.operation = 'update'
+  }
+  const csvFileName = getSkillsCsvFilename(csvFilenamePrefix, lastFile)
+  log.info(`csvFileName: ${csvFileName}`)
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')
-  let csvFilenamePrefix: string
-  const lastFile = {
-    lastFileOperation: await tableService.getJobData('skillsSync', 'lastFileOperation'),
-    lastFileDate: await tableService.getJobData('skillsSync', 'lastFileDate'),
-    lastFileSequenceNumber: await tableService.getJobData('skillsSync', 'lastFileSequenceNumber')
-  }
-  const formatTokens = 'DDMMYYYY'
-  const formattedDate = dayjs().format(formatTokens)
-  const sequenceNumber = ((lastFile.lastFileSequenceNumber != null) && (lastFile.lastFileDate != null) && formattedDate === lastFile.lastFileDate) ? parseInt(lastFile.lastFileSequenceNumber) + 1 : 1
-  let operation
-  if (lastSuccessTimestamp === undefined) {
-    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixCreate
-    operation = 'create'
-  } else {
-    csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixUpdate
-    operation = 'update'
-  }
-  const csvFileName = `${csvFilenamePrefix}_${formattedDate}_${sequenceNumber}.csv`
-  log.info(`csvFileName: ${csvFileName}`)
-
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
@@ -99,12 +107,14 @@ Promise<{ csvFile: JobsFile }> => {
   log.info(`Local temporary file written: ${localFilePath}`)
 
   const sshPrivateKey = await tableService.getJobData('skillsSync', 'sshPrivateKey')
+
   // Upload to SFTP
   await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
+
   // Update Azure storage table entries
-  await tableService.upsertJobData('skillsSync', 'lastFileOperation', operation)
-  await tableService.upsertJobData('skillsSync', 'lastFileDate', formattedDate)
-  await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', sequenceNumber.toString())
+  await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
+  await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
+  await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
 
   // Delete the CSV file from the tmp folder
   try {
@@ -113,6 +123,7 @@ Promise<{ csvFile: JobsFile }> => {
   } catch (err) {
     log.error(`Failed to delete temporary file ${localFilePath}:`, err)
   }
+
   return { csvFile }
 }
 
@@ -121,4 +132,9 @@ export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimes
   const startFmt = dayjs(startTimestamp).format(formatTokens)
   const endFmt = dayjs(endTimestamp).format(formatTokens)
   return `${key}_${startFmt}_to_${endFmt}`
+}
+
+export const getSkillsCsvFilename = (prefix: string, fileDetails: SkillsCompletedLearnerRecordsFileDetails): string => {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  return `${prefix}_${fileDetails.date}_${fileDetails.sequenceNumber}.csv`
 }

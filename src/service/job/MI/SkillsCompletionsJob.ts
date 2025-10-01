@@ -4,6 +4,7 @@ import { type JobResult } from '../jobService'
 import log from 'log'
 import { type NotificationClient } from '../../notification/notifications'
 import { TableDateRangeJob } from './TableDateRangeJob'
+import config from '../../../config'
 
 export class SkillsCompletionsJob extends TableDateRangeJob {
   constructor (protected readonly notificationClient: NotificationClient, protected readonly defaultFallbackDuration: string) {
@@ -18,11 +19,19 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
     const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(lastSuccessTimestamp)
     let resultText: string
     if (csvUploadResult !== undefined) {
-      resultText = `Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`
+      if (csvUploadResult.csvFile.contents.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
+        log.info('Blank skills completion learner record csv file is not allowed to send therefore it is not generated')
+        resultText = 'Blank skills completion learner record csv file is not allowed to send therefore it is not generated'
+      } else {
+        log.info(`Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`)
+        resultText = `Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`
+      }
+      await tableService.upsertJobData(this.tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
+      log.info(`lastReportTimestamp is updated in the skillsSync Azure partition: '${currentTimeStamp}'`)
     } else {
-      resultText = 'Found 0 course completions for the specified time period'
+      log.error('Execution failed for the skills completion learner record csv file')
+      resultText = 'Execution failed for the skills completion learner record csv file'
     }
-    await tableService.upsertJobData(this.tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
     return {
       text: resultText
     }

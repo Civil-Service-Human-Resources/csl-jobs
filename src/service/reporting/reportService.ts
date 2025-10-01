@@ -96,6 +96,12 @@ Promise<{ csvFile: JobsFile }> => {
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
 
+  // if csv file is blank and not allowed to send then do not process further
+  if (completions.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
+    log.info('Data not found. Blank csv file is not allowed to send therefore it is not generated')
+    return { csvFile }
+  }
+
   // Storing the csv file in blob storage for the record
   await uploadFile(csvFile)
   log.info(`csv file uploaded to Azure Blob Storage: ${csvFileName}`)

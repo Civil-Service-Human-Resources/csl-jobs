@@ -40,7 +40,8 @@ const config = {
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       csvFilenamePrefixCreate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_CREATE ?? 'ER_Create',
-      csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update'
+      csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',

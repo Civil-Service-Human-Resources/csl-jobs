@@ -52,7 +52,7 @@ const config = {
     },
     obtStats: {
       cron: env.OBT_STATS_CRON ?? '0 0 0 * * *',
-      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1D',
+      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1W',
       bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
       courseIds: (env.OBT_COURSE_IDS ?? '').split(','),

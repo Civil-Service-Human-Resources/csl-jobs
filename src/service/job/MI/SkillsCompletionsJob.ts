@@ -5,6 +5,9 @@ import log from 'log'
 import { type NotificationClient } from '../../notification/notifications'
 import { TableDateRangeJob } from './TableDateRangeJob'
 import config from '../../../config'
+import { zipFiles } from '../../file/zip'
+import { uploadFile } from '../../reporting/reportService'
+import * as govNotifyClient from '../../notification/govUKNotify/govUkNotify'
 
 export class SkillsCompletionsJob extends TableDateRangeJob {
   constructor (protected readonly notificationClient: NotificationClient, protected readonly defaultFallbackDuration: string) {
@@ -17,6 +20,16 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
     log.info(`Data extract timeStamp: '${currentTimeStamp}'`)
     const lastSuccessTimestamp = await tableService.getDateFromTable(this.tablePartitionKey, 'lastReportTimestamp')
     const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(lastSuccessTimestamp)
+    if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0 &&
+      csvUploadResult.csvFile.contents.length !== 0 && config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
+      const zipFile = await zipFiles([csvUploadResult.csvFile], csvUploadResult.csvFile.filename)
+      const uploadResult = await uploadFile(zipFile.result)
+      const description = `Skills learner record extract: ${csvUploadResult.csvFile.filename}`
+      await Promise.all(
+        [govNotifyClient.sendSkillsFileNotification(uploadResult, description),
+          govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
+      )
+    }
     let resultText: string
     if (csvUploadResult !== undefined) {
       if (csvUploadResult.csvFile.contents.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {

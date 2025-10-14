@@ -8,14 +8,16 @@ import dayjs from 'dayjs'
 import type { OrgDomainsEmailPersonalisation } from '../../orgDomains/model/emailPersonalisation'
 import type { PasswordEmailPersonalisation } from '../../orgDomains/model/PasswordEmailPersonalisation'
 
-const { jobs: { courseCompletions, orgDomains } } = config
+const { jobs: { courseCompletions, orgDomains, skillsCompletedLearnerRecords }, notifications: { govNotify: { genericTemplates } } } = config
 const dateFormatTokens = 'DD/MM/YYYY'
 
 const notifications: GovUkEmailNotification[] = [
   new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, courseCompletions.notifyTemplate, courseCompletions.emailRecipients),
   new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, courseCompletions.notifyPasswordTemplate, courseCompletions.emailRecipients),
   new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate, orgDomains.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate, orgDomains.emailRecipients)
+  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate, orgDomains.emailRecipients),
+  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD, genericTemplates.fileDownload, skillsCompletedLearnerRecords.emailRecipients),
+  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword, skillsCompletedLearnerRecords.emailRecipients)
 ]
 
 const sendEmail = async (notificationType: GovUkNotification, personalisation: any): Promise<void> => {
@@ -26,6 +28,23 @@ const sendEmail = async (notificationType: GovUkNotification, personalisation: a
   } else {
     log.warn(`Notification '${notificationType}' cannot be sent as the Govuk notifier has not been configured`)
   }
+}
+
+export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string): Promise<void> => {
+  const personalisation: MIReportPersonalisation = {
+    description,
+    linkExpiryInDays: uploadResult.expiryInDays,
+    link: uploadResult.link
+  }
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD, personalisation)
+}
+
+export const sendSkillsFilePasswordNotification = async (password: string, description: string): Promise<void> => {
+  const personalisation: PasswordPersonalisation = {
+    description,
+    password
+  }
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, personalisation)
 }
 
 export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: Date, uploadResult: UploadResult): Promise<void> => {

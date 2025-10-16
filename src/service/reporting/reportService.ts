@@ -119,7 +119,7 @@ Promise<{ csvFile: JobsFile }> => {
 
   // Update Azure storage table entries
   await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
-  await tableService.upsertJobData('z', 'lastFileDate', lastFile.date)
+  await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
   await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
 
   // Delete the CSV file from the tmp folder

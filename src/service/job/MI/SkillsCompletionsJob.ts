@@ -20,27 +20,28 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
     log.info(`Data extract timeStamp: '${currentTimeStamp}'`)
     const lastSuccessTimestamp = await tableService.getDateFromTable(this.tablePartitionKey, 'lastReportTimestamp')
     const csvUploadResult = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(lastSuccessTimestamp)
-    if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0 &&
-      csvUploadResult.csvFile.contents.length !== 0 && config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
-      const zipFile = await zipFiles([csvUploadResult.csvFile], csvUploadResult.csvFile.filename)
-      const uploadResult = await uploadFile(zipFile.result)
-      const description = `Skills learner record extract: ${csvUploadResult.csvFile.filename}`
-      await Promise.all(
-        [govNotifyClient.sendSkillsFileNotification(uploadResult, description),
-          govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
-      )
-    }
     let resultText: string
     if (csvUploadResult !== undefined) {
       if (csvUploadResult.csvFile.contents.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
         log.info('Blank skills completion learner record csv file is not allowed to send therefore it is not generated')
         resultText = 'Blank skills completion learner record csv file is not allowed to send therefore it is not generated'
       } else {
+        log.debug(`config.jobs.skillsCompletedLearnerRecords.emailRecipients.length: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.length}'`)
+        if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0) {
+          log.info('Creating zip file to be sent by email')
+          const zipFile = await zipFiles([csvUploadResult.csvFile], csvUploadResult.csvFile.filename)
+          const uploadResult = await uploadFile(zipFile.result)
+          log.info(`Zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
+          const description = `Skills learner record extract: ${csvUploadResult.csvFile.filename}`
+          await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
+            govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
+          )
+        }
+        await tableService.upsertJobData(this.tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
+        log.info(`lastReportTimestamp is updated in the skillsSync Azure partition: '${currentTimeStamp}'`)
         log.info(`Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`)
         resultText = `Successfully generated and uploaded the skills completion learner record csv file '${csvUploadResult.csvFile.filename}'`
       }
-      await tableService.upsertJobData(this.tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
-      log.info(`lastReportTimestamp is updated in the skillsSync Azure partition: '${currentTimeStamp}'`)
     } else {
       log.error('Execution failed for the skills completion learner record csv file')
       resultText = 'Execution failed for the skills completion learner record csv file'

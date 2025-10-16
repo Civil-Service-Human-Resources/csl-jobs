@@ -98,7 +98,7 @@ Promise<{ csvFile: JobsFile }> => {
 
   // if csv file is blank and not allowed to send then do not process further
   if (completions.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
-    log.info('Data not found. Blank csv file is not allowed to send therefore it is not generated')
+    log.info('Data not found. Blank csv file is not allowed to send therefore it is not uploaded')
     return { csvFile }
   }
 
@@ -116,13 +116,7 @@ Promise<{ csvFile: JobsFile }> => {
 
   // Upload to SFTP
   const sftpUploadResult = await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
-  if (sftpUploadResult) {
-    // Update Azure storage table entries
-    log.info('File uploaded to sftp. Updating the skillsSync data in Azure table')
-    await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
-    await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
-    await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
-  }
+
   // Delete the CSV file from the tmp folder
   try {
     await fs.unlink(localFilePath)
@@ -131,6 +125,14 @@ Promise<{ csvFile: JobsFile }> => {
     log.error(`Failed to delete temporary file ${localFilePath}:`, err)
   }
 
+  //
+  if (sftpUploadResult) {
+    // Update Azure storage table entries
+    log.info('File uploaded to sftp. Updating the skillsSync data in Azure table')
+    await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
+    await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
+    await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
+  }
   return { csvFile }
 }
 

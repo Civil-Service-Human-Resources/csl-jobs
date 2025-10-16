@@ -17,6 +17,6 @@ export const uploadToSftp = async (localFilePath: string, csvFileName: string, s
       await sftp.end()
     }
   } else {
-    log.info('sftp details not provided, not uploading.')
+    log.info('Either sftp details not provided or unable to connect sftp server, therefore csv file is not uploaded.')
   }
 }

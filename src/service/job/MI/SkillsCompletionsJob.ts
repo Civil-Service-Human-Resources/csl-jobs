@@ -12,6 +12,7 @@ export class SkillsCompletionsJob extends TableDateRangeJob {
   protected async runJob (): Promise<JobResult> {
     log.info('Getting skills completions learner records')
     const resultText = await reportService.generateSkillsCompletedLearnerRecordsAndUploadToSftp(this.tablePartitionKey)
+    log.info(`SkillsCompletionsJob: runJob: resultText: '${resultText}'`)
     return {
       text: resultText
     }

@@ -20,7 +20,7 @@ export const createSftpConnection = async (sshPrivateKey: string | undefined): P
     await sftp.connect(connectionConfig)
     return sftp
   } catch (err) {
-    log.error('Error connecting sftp:', err)
+    log.error('Error connecting sftp: ', err)
     await sftp.end()
     return undefined
   }

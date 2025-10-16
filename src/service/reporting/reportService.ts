@@ -115,13 +115,14 @@ Promise<{ csvFile: JobsFile }> => {
   const sshPrivateKey = await tableService.getJobData('skillsSync', 'sshPrivateKey')
 
   // Upload to SFTP
-  await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
-
-  // Update Azure storage table entries
-  await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
-  await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
-  await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
-
+  const sftpUploadResult = await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
+  if (sftpUploadResult) {
+    // Update Azure storage table entries
+    log.info('File uploaded to sftp. Updating the skillsSync data in Azure table')
+    await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
+    await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
+    await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
+  }
   // Delete the CSV file from the tmp folder
   try {
     await fs.unlink(localFilePath)

@@ -121,12 +121,12 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   // Upload to SFTP
   const sftpUploadResult = await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
   if (sftpUploadResult) {
-    log.info(`Successfully uploaded the skills completion learner record csv file to sftp: '${csvFile.filename}'`)
-    resultText = `Successfully uploaded the skills completion learner record csv file to sftp: '${csvFile.filename}'`
+    log.info(`Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`)
+    resultText = `Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`
   } else {
     sftpUploadSuccess = false
-    log.info(`Skills completion learner record csv file upload to sftp FAILED: '${csvFile.filename}'`)
-    resultText = `Skills completion learner record csv sftp upload FAILED: '${csvFile.filename}'`
+    log.info(`Skills completion learner record csv file '${csvFile.filename}' sftp upload FAILED.`)
+    resultText = `Skills completion learner record csv file '${csvFile.filename}' sftp upload FAILED.`
   }
 
   // Delete the CSV file from the tmp folder
@@ -148,12 +148,12 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
       govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
     )
-    log.info(`'${zipFile.result.filename}' Zip File is sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
-    resultText = resultText + ` Zip file is sent via email: '${zipFile.result.filename}'`
+    log.info(`Zip File '${zipFile.result.filename}' is sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    resultText = resultText + ` And zip file '${zipFile.result.filename}' is sent via email.`
   } else {
     emailSentSuccess = false
-    log.info('No email recipients are defined, therefore the csv zip file not sent via email.')
-    resultText = resultText + ' No email recipients are defined, therefore the csv zip file not sent via email.'
+    log.info('csv zip file not sent via email because no email recipients are defined.')
+    resultText = resultText + ' And csv zip file not sent via email because no email recipients are defined.'
   }
 
   if (sftpUploadSuccess || emailSentSuccess) {
@@ -165,7 +165,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     log.info(`lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
     log.info(`Successfully generated and processed the skills completion learner record csv file '${csvFile.filename}'`)
   } else {
-    log.info(`Neither the csv file uploaded to sftp nor zip file sent via email, therefore lastReportTimestamp is not updated in the '${tablePartitionKey}' Azure partition.`)
+    log.info(`lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the csv file uploaded to sftp nor zip file sent via email.`)
   }
 
   return resultText

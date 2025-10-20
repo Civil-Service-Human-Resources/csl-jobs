@@ -3,7 +3,7 @@ import config from '../config'
 import { JobType } from '../service/job/JobType'
 import { runJob } from '../service/job/jobService'
 
-const { jobs: { courseCompletions: { cron } } } = config
+const { jobs: { courseCompletions: { cron, runOnStartup } } } = config
 
 export async function generateCourseCompletions (
   myTimer: Timer,
@@ -14,5 +14,6 @@ export async function generateCourseCompletions (
 
 app.timer('generateCourseCompletions', {
   schedule: cron,
-  handler: generateCourseCompletions
+  handler: generateCourseCompletions,
+  runOnStartup
 })

@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
+import { getArrayFromCsvEnvVar } from './util/utils'
 
 dotenv.config({
   path: path.join(__dirname, '/.env')
@@ -42,7 +43,8 @@ const config = {
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       csvFilenamePrefixCreate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_CREATE ?? 'ER_Create',
       csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
-      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean
+      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean,
+      emailRecipients: getArrayFromCsvEnvVar(env.SKILLS_SYNC_RECIPIENTS)
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
@@ -66,7 +68,11 @@ const config = {
       alertChannelId: env.SLACK_CHANNEL_NOTIFICATION_ID
     },
     govNotify: {
-      apiKey: env.GOVUK_NOTIFY_API_KEY
+      apiKey: env.GOVUK_NOTIFY_API_KEY,
+      genericTemplates: {
+        fileDownloadPassword: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD_PASSWORD ?? '',
+        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? ''
+      }
     }
   },
   app: {

@@ -30,6 +30,7 @@ export const getDateFromTable = async (partitionKey: string, rowKey: string): Pr
   if (timestamp !== undefined) {
     const date = new CustomDate(timestamp)
     date.fixOffset()
+    log.info(`Timestamp is ${date.toISOString()}`)
     return date
   }
   return undefined

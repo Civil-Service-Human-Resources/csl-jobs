@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
+import { getArrayFromCsvEnvVar } from './util/utils'
 
 dotenv.config({
   path: path.join(__dirname, '/.env')
@@ -33,7 +34,8 @@ const config = {
       defaultFallbackPeriod: env.COURSE_COMPLETIONS_FALLBACK_DURATION ?? 'P1W',
       notifyTemplate: env.NOTIFY_COURSE_COMPLETION_TEMPLATE ?? '',
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
-      emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(',')
+      emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(','),
+      runOnStartup: JSON.parse(env.COURSE_COMPLETIONS_RUN_ON_STARTUP ?? 'false') as boolean
     },
     skillsCompletedLearnerRecords: {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
@@ -41,7 +43,8 @@ const config = {
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       csvFilenamePrefixCreate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_CREATE ?? 'ER_Create',
       csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
-      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean
+      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean,
+      emailRecipients: getArrayFromCsvEnvVar(env.SKILLS_SYNC_RECIPIENTS)
     },
     orgDomains: {
       cron: env.ORG_DOMAINS_CRON ?? '0 0 22 * * SUN',
@@ -51,10 +54,11 @@ const config = {
     },
     obtStats: {
       cron: env.OBT_STATS_CRON ?? '0 0 0 * * *',
-      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1D',
+      defaultFallbackPeriod: env.OBT_STATS_FALLBACK_DURATION ?? 'P1W',
       bucketAlias: env.OBT_S3_BUCKET_ALIAS ?? '',
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
-      courseIds: (env.OBT_COURSE_IDS ?? '').split(',')
+      courseIds: (env.OBT_COURSE_IDS ?? '').split(','),
+      runOnStartup: JSON.parse(env.OBT_STATS_RUN_ON_STARTUP ?? 'false') as boolean
     }
   },
   notifications: {
@@ -64,7 +68,11 @@ const config = {
       alertChannelId: env.SLACK_CHANNEL_NOTIFICATION_ID
     },
     govNotify: {
-      apiKey: env.GOVUK_NOTIFY_API_KEY
+      apiKey: env.GOVUK_NOTIFY_API_KEY,
+      genericTemplates: {
+        fileDownloadPassword: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD_PASSWORD ?? '',
+        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? ''
+      }
     }
   },
   app: {

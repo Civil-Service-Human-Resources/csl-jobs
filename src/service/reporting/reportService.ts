@@ -12,9 +12,9 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import log from 'log'
 import config from '../../config'
-import { type CustomDate } from '../date/CustomDate'
 import * as tableService from '../azure/storage/table/service'
 import os from 'os'
+import * as govNotifyClient from '../notification/govUKNotify/govUkNotify'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -29,7 +29,7 @@ interface SkillsCompletedLearnerRecordsFileDetails {
   sequenceNumber: string | undefined
 }
 
-const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
+export const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
   return await azureBlobService.uploadFile(MI_BLOB_CONTAINER, file)
 }
 
@@ -65,21 +65,25 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (lastSuccessTimestamp: CustomDate | undefined):
-Promise<{ csvFile: JobsFile }> => {
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (tablePartitionKey: string): Promise<string> => {
+  const currentTimeStamp = new Date().toISOString()
+  log.info(`Data extract timeStamp: '${currentTimeStamp}'`)
   const lastFile: SkillsCompletedLearnerRecordsFileDetails = {
-    operation: await tableService.getJobData('skillsSync', 'lastFileOperation'),
-    date: await tableService.getJobData('skillsSync', 'lastFileDate'),
-    sequenceNumber: await tableService.getJobData('skillsSync', 'lastFileSequenceNumber')
+    operation: await tableService.getJobData(tablePartitionKey, 'lastFileOperation'),
+    date: await tableService.getJobData(tablePartitionKey, 'lastFileDate'),
+    sequenceNumber: await tableService.getJobData(tablePartitionKey, 'lastFileSequenceNumber')
   }
+  let sftpUploadSuccess = true
+  let emailSentSuccess = true
 
+  const lastReportTimestamp = await tableService.getDateFromTable(tablePartitionKey, 'lastReportTimestamp')
   // Defining csv filename
   const newFormattedDate = dayjs().format('DDMMYYYY')
   const newSequenceNumber = ((lastFile.sequenceNumber != null) && (lastFile.date != null) && newFormattedDate === lastFile.date) ? parseInt(lastFile.sequenceNumber) + 1 : 1
   lastFile.date = newFormattedDate
   lastFile.sequenceNumber = newSequenceNumber.toString()
   let csvFilenamePrefix: string
-  if (lastSuccessTimestamp === undefined) {
+  if (lastReportTimestamp === undefined) {
     csvFilenamePrefix = config.jobs.skillsCompletedLearnerRecords.csvFilenamePrefixCreate
     lastFile.operation = 'create'
   } else {
@@ -88,18 +92,18 @@ Promise<{ csvFile: JobsFile }> => {
   }
   const csvFileName = getSkillsCsvFilename(csvFilenamePrefix, lastFile)
   log.info(`csvFileName: ${csvFileName}`)
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const emailIds = (await tableService.getJobData('skillsSync', 'emailIds')).split(',')
-  const completions = await getSkillsCompletedLearnerRecords(emailIds, lastSuccessTimestamp)
+  const emailIdsFromTS = await tableService.getJobData(tablePartitionKey, 'emailIds')
+  const emailIds = emailIdsFromTS !== undefined ? emailIdsFromTS.split(',') : []
+  const completions = await getSkillsCompletedLearnerRecords(emailIds, lastReportTimestamp)
   const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
 
+  let resultText: string
   // if csv file is blank and not allowed to send then do not process further
   if (completions.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
-    log.info('Data not found. Blank csv file is not allowed to send therefore it is not generated')
-    return { csvFile }
+    log.info('Data not found. Blank skills completion learner record csv file is not allowed to send, therefore it is not generated.')
+    resultText = 'Data not found. Blank skills completion learner record csv file is not allowed to send, therefore it is not generated.'
+    return resultText
   }
 
   // Storing the csv file in blob storage for the record
@@ -112,15 +116,18 @@ Promise<{ csvFile: JobsFile }> => {
   await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
   log.info(`Local temporary file written: ${localFilePath}`)
 
-  const sshPrivateKey = await tableService.getJobData('skillsSync', 'sshPrivateKey')
+  const sshPrivateKey = await tableService.getJobData(tablePartitionKey, 'sshPrivateKey')
 
   // Upload to SFTP
-  await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
-
-  // Update Azure storage table entries
-  await tableService.upsertJobData('skillsSync', 'lastFileOperation', lastFile.operation)
-  await tableService.upsertJobData('skillsSync', 'lastFileDate', lastFile.date)
-  await tableService.upsertJobData('skillsSync', 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
+  const sftpUploadResult = await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
+  if (sftpUploadResult) {
+    log.info(`Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`)
+    resultText = `Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`
+  } else {
+    sftpUploadSuccess = false
+    log.info(`Skills completion learner record csv file '${csvFile.filename}' sftp upload FAILED.`)
+    resultText = `Skills completion learner record csv file '${csvFile.filename}' sftp upload FAILED.`
+  }
 
   // Delete the CSV file from the tmp folder
   try {
@@ -130,7 +137,38 @@ Promise<{ csvFile: JobsFile }> => {
     log.error(`Failed to delete temporary file ${localFilePath}:`, err)
   }
 
-  return { csvFile }
+  log.info(`config.jobs.skillsCompletedLearnerRecords.emailRecipients.length: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.length}'`)
+  if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0) {
+    log.debug(`config.jobs.skillsCompletedLearnerRecords.emailRecipients: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    log.info('Creating zip file to be sent by email')
+    const zipFile = await zipFiles([csvFile], csvFile.filename)
+    const uploadResult = await uploadFile(zipFile.result)
+    log.info(`Zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
+    const description = `Skills learner record extract: ${csvFile.filename}`
+    await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
+      govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
+    )
+    log.info(`Zip File '${zipFile.result.filename}' is sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    resultText = resultText + ` And zip file '${zipFile.result.filename}' is sent via email.`
+  } else {
+    emailSentSuccess = false
+    log.info('csv zip file not sent via email because no email recipients are defined.')
+    resultText = resultText + ' And csv zip file not sent via email because no email recipients are defined.'
+  }
+
+  if (sftpUploadSuccess || emailSentSuccess) {
+    // Update Azure storage table entries
+    await tableService.upsertJobData(tablePartitionKey, 'lastFileOperation', lastFile.operation)
+    await tableService.upsertJobData(tablePartitionKey, 'lastFileDate', lastFile.date)
+    await tableService.upsertJobData(tablePartitionKey, 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
+    await tableService.upsertJobData(tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
+    log.info(`lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
+    log.info(`Successfully generated and processed the skills completion learner record csv file '${csvFile.filename}'`)
+  } else {
+    log.info(`lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the csv file uploaded to sftp nor zip file sent via email.`)
+  }
+
+  return resultText
 }
 
 export const getTimeRangeFileName = (key: string, startTimestamp: Date, endTimestamp: Date): string => {

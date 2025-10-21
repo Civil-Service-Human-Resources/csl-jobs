@@ -52,7 +52,6 @@ const getCourseRecordSQL = (): string => {
                left join csrs.grade g on cs.grade_id = g.id
                join csrs.organisational_unit ou on cs.organisational_unit_id = ou.id
                inner join learner_record.module_record mr on cr.user_id = mr.user_id and cr.course_id = mr.course_id
-          and cr.last_updated between ? and ?
           and cr.course_id in (?)
       group by cr.user_id, cr.course_id
       order by last_updated desc, user_id, course_id;`
@@ -135,9 +134,9 @@ export const getCompletedCourseRecords = async (fromDate: Date, toDate: Date): P
   return await fetchRows<ICourseCompletion>(SQL, [fromDate.toISOString(), toDate.toISOString()])
 }
 
-export const getAnonymousCourseRecords = async (fromDate: Date, toDate: Date, courseIds: string[]): Promise<IAnonymousCourseRecord[]> => {
+export const getAnonymousCourseRecords = async (courseIds: string[]): Promise<IAnonymousCourseRecord[]> => {
   const SQL = getCourseRecordSQL()
-  return await fetchRows<IAnonymousCourseRecord>(SQL, [fromDate.toISOString(), toDate.toISOString(), courseIds])
+  return await fetchRows<IAnonymousCourseRecord>(SQL, [courseIds])
 }
 
 export const getOrganisationsWithIds = async (): Promise<IOrganisation[]> => {

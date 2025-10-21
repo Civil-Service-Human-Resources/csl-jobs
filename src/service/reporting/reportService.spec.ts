@@ -51,10 +51,10 @@ describe('Report service tests', () => {
       sandbox.restore()
     })
     it('should upload a csv file to S3 when completion rows have been found', async () => {
-      const res = await generateOBTStatsAndUploadToS3(testDate, testDate, ['courseId'], 's3Dir', 's3Bucket')
-      sandbox.assert.calledWith(stubs.getFormattedCourseRecords, testDate, testDate, ['courseId'])
+      const res = await generateOBTStatsAndUploadToS3(['courseId'], 's3Dir', 's3Bucket')
+      sandbox.assert.calledWith(stubs.getFormattedCourseRecords, ['courseId'])
       sandbox.assert.calledWith(stubs.objsToCsv, [{} as any])
-      expect(res).to.eql('Successfully generated and uploaded OBT file \'obt_stats_01_01_2023_to_01_01_2023\' to S3')
+      expect(res).to.eql('Successfully generated and uploaded OBT file \'obt_stats\' to S3')
     })
   })
   describe('Generate course completions tests', () => {

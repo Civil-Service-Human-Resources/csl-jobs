@@ -33,13 +33,12 @@ const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
   return await azureBlobService.uploadFile(MI_BLOB_CONTAINER, file)
 }
 
-export const generateOBTStatsAndUploadToS3 = async (
-  from: Date, to: Date, courseIds: string[],
+export const generateOBTStatsAndUploadToS3 = async (courseIds: string[],
   s3Directory: string, s3BucketAlias: string): Promise<string> => {
-  const data = await learnerRecordService.getFormattedCourseRecords(from, to, courseIds)
+  const data = await learnerRecordService.getFormattedCourseRecords(courseIds)
   let resp = 'No OBT data to send'
   if (data.length > 0) {
-    const fileName = getTimeRangeFileName('obt_stats', from, to)
+    const fileName = 'obt_stats'
     const csv = await objsToCsv(data)
     const csvFile = JobsFile.from(`${s3Directory}/${fileName}.csv`, csv)
     await awsService.uploadFile(s3BucketAlias, csvFile)

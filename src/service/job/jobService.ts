@@ -35,8 +35,7 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       job = new OrgDomainsJob(notificationClient)
       break
     case JobType.OBT_STATS:
-      job = new OBTStatsJob(notificationClient, config.jobs.obtStats.defaultFallbackPeriod,
-        config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
+      job = new OBTStatsJob(notificationClient, config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
         config.jobs.obtStats.courseIds)
       break
     default:

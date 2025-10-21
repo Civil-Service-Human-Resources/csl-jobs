@@ -3,8 +3,8 @@ import { getOrganisationsWithFullNames } from '../csrs/service'
 import { getClientsideDayJS } from '../../util/dateUtil'
 import { type IAnonymousCourseRecord } from '../../db/shared/model'
 
-export async function getFormattedCourseRecords (from: Date, to: Date, courseIds: string[]): Promise<IAnonymousCourseRecord[]> {
-  const data = await getAnonymousCourseRecords(from, to, courseIds)
+export async function getFormattedCourseRecords (courseIds: string[]): Promise<IAnonymousCourseRecord[]> {
+  const data = await getAnonymousCourseRecords(courseIds)
   const orgsNameMap = await getOrganisationsWithFullNames()
   for (const row of data) {
     const fullOrgName = orgsNameMap.get(parseInt(row.organisation_id))

@@ -67,7 +67,7 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
 
 export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (tablePartitionKey: string): Promise<string> => {
   const currentTimeStamp = new Date().toISOString()
-  log.info(`Data extract timeStamp: '${currentTimeStamp}'`)
+  log.info(`Skills data extract timestamp: '${currentTimeStamp}'`)
   const lastFile: SkillsCompletedLearnerRecordsFileDetails = {
     operation: await tableService.getJobData(tablePartitionKey, 'lastFileOperation'),
     date: await tableService.getJobData(tablePartitionKey, 'lastFileDate'),
@@ -91,31 +91,32 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     lastFile.operation = 'update'
   }
   const csvFileName = getSkillsCsvFilename(csvFilenamePrefix, lastFile)
-  log.info(`csvFileName: ${csvFileName}`)
+  log.info(`Skills csv file name: ${csvFileName}`)
   const emailIdsFromTS = await tableService.getJobData(tablePartitionKey, 'emailIds')
   const emailIds = emailIdsFromTS !== undefined ? emailIdsFromTS.split(',') : []
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastReportTimestamp)
   const csvFileDataDelimiter = config.jobs.skillsCompletedLearnerRecords.csvFileDataDelimiter
+  log.info(`Skills csv file delimiter: ${csvFileDataDelimiter}`)
   const csvFileContents = await objsToDelimited(completions.length > 0 ? completions : [], csvFileDataDelimiter)
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
 
   let resultText: string
   // if csv file is blank and not allowed to send then do not process further
   if (completions.length <= 0 && !config.jobs.skillsCompletedLearnerRecords.sendBlankCsvFile) {
-    log.info('Data not found. Blank skills completion learner record csv file is not allowed to send, therefore it is not generated.')
+    log.info('Skills data not found. Blank skills completion learner record csv file is not allowed to send, therefore it is not generated.')
     resultText = 'Data not found. Blank skills completion learner record csv file is not allowed to send, therefore it is not generated.'
     return resultText
   }
 
   // Storing the csv file in blob storage for the record
   await uploadFile(csvFile)
-  log.info(`csv file uploaded to Azure Blob Storage: ${csvFileName}`)
+  log.info(`Skills csv file uploaded to Azure Blob Storage: ${csvFileName}`)
 
   // Write to local folder
   const localTempDir = os.tmpdir()
   const localFilePath = path.join(localTempDir, csvFileName)
   await writeFile(localFilePath, csvFile.contents, 'utf8')
-  log.info(`Local temporary file written: ${localFilePath}`)
+  log.info(`Skills local temporary file written: ${localFilePath}`)
 
   const sshPrivateKey = await tableService.getJobData(tablePartitionKey, 'sshPrivateKey')
 
@@ -133,27 +134,27 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   // Delete the CSV file from the tmp folder
   try {
     await unlink(localFilePath)
-    log.info(`Deleted temporary file: ${localFilePath}`)
+    log.info(`Skills - Deleted temporary file: ${localFilePath}`)
   } catch (err) {
-    log.error(`Failed to delete temporary file ${localFilePath}:`, err)
+    log.error(`Skills - Failed to delete temporary file ${localFilePath}:`, err)
   }
 
   log.info(`config.jobs.skillsCompletedLearnerRecords.emailRecipients.length: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.length}'`)
   if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0) {
     log.debug(`config.jobs.skillsCompletedLearnerRecords.emailRecipients: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
-    log.info('Creating zip file to be sent by email')
+    log.debug('Skills - Creating zip file to be sent by email')
     const zipFile = await zipFiles([csvFile], csvFile.filename)
     const uploadResult = await uploadFile(zipFile.result)
-    log.info(`Zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
+    log.info(`Skills zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
     const description = `Skills learner record extract: ${csvFile.filename}`
     await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
       govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
     )
-    log.info(`Zip File '${zipFile.result.filename}' successfully sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    log.info(`Skills zip File '${zipFile.result.filename}' successfully sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
     resultText = resultText + ` Zip file '${zipFile.result.filename}' successfully sent via email.`
   } else {
     emailSentSuccess = false
-    log.info('Csv zip file not sent via email because no email recipients are defined.')
+    log.info('Skills csv zip file not sent via email because no email recipients are defined.')
     resultText = resultText + ' Csv zip file not sent via email because no email recipients are defined.'
   }
 
@@ -163,10 +164,10 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     await tableService.upsertJobData(tablePartitionKey, 'lastFileDate', lastFile.date)
     await tableService.upsertJobData(tablePartitionKey, 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
     await tableService.upsertJobData(tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
-    log.info(`lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
+    log.info(`Skills lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
     log.info(`Skills completion learner record csv file '${csvFile.filename}' successfully generated and processed.`)
   } else {
-    log.info(`lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the csv file uploaded to sftp nor zip file sent via email.`)
+    log.info(`Skills lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the csv file uploaded to sftp nor zip file sent via email.`)
   }
 
   return resultText

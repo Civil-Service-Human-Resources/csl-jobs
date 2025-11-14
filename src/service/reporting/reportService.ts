@@ -2,19 +2,19 @@ import * as azureBlobService from '../azure/storage/blob/service'
 import { type UploadResult } from '../azure/storage/blob/service'
 import { JobsFile } from '../file/models'
 import { getCompletedCourseRecords, getSkillsCompletedLearnerRecords } from '../../db/shared/database'
-import { objsToCsv } from '../file/csv'
+import { objsToCsv, objsToDelimited } from '../file/delimited'
 import { type EncryptedZipResult, zipFiles } from '../file/zip'
 import dayjs from 'dayjs'
 import * as learnerRecordService from '../learnerRecord/service'
 import * as awsService from '../aws/s3/service'
 import { uploadToSftp } from '../sftp/service'
-import * as fs from 'fs/promises'
 import path from 'path'
 import log from 'log'
 import config from '../../config'
 import * as tableService from '../azure/storage/table/service'
 import os from 'os'
 import * as govNotifyClient from '../notification/govUKNotify/govUkNotify'
+import { unlink, writeFile } from '../file/fileService'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -95,7 +95,8 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   const emailIdsFromTS = await tableService.getJobData(tablePartitionKey, 'emailIds')
   const emailIds = emailIdsFromTS !== undefined ? emailIdsFromTS.split(',') : []
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastReportTimestamp)
-  const csvFileContents = await objsToCsv(completions.length > 0 ? completions : [])
+  const csvFileDataDelimiter = config.jobs.skillsCompletedLearnerRecords.csvFileDataDelimiter
+  const csvFileContents = await objsToDelimited(completions.length > 0 ? completions : [], csvFileDataDelimiter)
   const csvFile = JobsFile.from(`${csvFileName}`, csvFileContents)
 
   let resultText: string
@@ -113,7 +114,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   // Write to local folder
   const localTempDir = os.tmpdir()
   const localFilePath = path.join(localTempDir, csvFileName)
-  await fs.writeFile(localFilePath, csvFile.contents, 'utf8')
+  await writeFile(localFilePath, csvFile.contents, 'utf8')
   log.info(`Local temporary file written: ${localFilePath}`)
 
   const sshPrivateKey = await tableService.getJobData(tablePartitionKey, 'sshPrivateKey')
@@ -121,8 +122,8 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   // Upload to SFTP
   const sftpUploadResult = await uploadToSftp(localFilePath, csvFileName, sshPrivateKey)
   if (sftpUploadResult) {
-    log.info(`Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`)
-    resultText = `Successfully uploaded the skills completion learner record csv file '${csvFile.filename}' to sftp server.`
+    log.info(`Skills completion learner record csv file '${csvFile.filename}' successfully uploaded to sftp server.`)
+    resultText = `Skills completion learner record csv file '${csvFile.filename}' successfully uploaded to sftp server.`
   } else {
     sftpUploadSuccess = false
     log.info(`Skills completion learner record csv file '${csvFile.filename}' sftp upload FAILED.`)
@@ -131,7 +132,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
 
   // Delete the CSV file from the tmp folder
   try {
-    await fs.unlink(localFilePath)
+    await unlink(localFilePath)
     log.info(`Deleted temporary file: ${localFilePath}`)
   } catch (err) {
     log.error(`Failed to delete temporary file ${localFilePath}:`, err)
@@ -148,12 +149,12 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
       govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
     )
-    log.info(`Zip File '${zipFile.result.filename}' is sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
-    resultText = resultText + ` And zip file '${zipFile.result.filename}' is sent via email.`
+    log.info(`Zip File '${zipFile.result.filename}' successfully sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    resultText = resultText + ` Zip file '${zipFile.result.filename}' successfully sent via email.`
   } else {
     emailSentSuccess = false
-    log.info('csv zip file not sent via email because no email recipients are defined.')
-    resultText = resultText + ' And csv zip file not sent via email because no email recipients are defined.'
+    log.info('Csv zip file not sent via email because no email recipients are defined.')
+    resultText = resultText + ' Csv zip file not sent via email because no email recipients are defined.'
   }
 
   if (sftpUploadSuccess || emailSentSuccess) {
@@ -163,7 +164,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
     await tableService.upsertJobData(tablePartitionKey, 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
     await tableService.upsertJobData(tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
     log.info(`lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
-    log.info(`Successfully generated and processed the skills completion learner record csv file '${csvFile.filename}'`)
+    log.info(`Skills completion learner record csv file '${csvFile.filename}' successfully generated and processed.`)
   } else {
     log.info(`lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the csv file uploaded to sftp nor zip file sent via email.`)
   }

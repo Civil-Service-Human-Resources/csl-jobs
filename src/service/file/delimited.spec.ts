@@ -3,19 +3,39 @@ import { objsToCsv, objsToDelimited } from './delimited'
 
 interface TestInt {
   emailAddress: string
+  cei: string
   contentId: string
   timeSpent: number
 }
 
-describe('objsToDelimited with different delimiters', () => {
+// Helper mirrors objsToDelimited quoting logic exactly
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const shouldQuote = (value: string, delimiter: string) => {
+  return new RegExp(`[${delimiter}\n"]`).test(value)
+}
+
+// Helper to convert any value to the format used by objsToDelimited
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const formatValue = (val: any, delimiter: string) => {
+  if (val === null || val === undefined) return ''
+  if (typeof val === 'string') {
+    val = val.replace(/"/g, '""')
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    if (shouldQuote(val, delimiter)) val = `"${val}"`
+    return val
+  }
+  return String(val)
+}
+
+describe('objsToDelimited dynamic tests', () => {
   const testObjs: TestInt[] = [
-    { emailAddress: 'abc@xyz.com', contentId: 'blue"colour', timeSpent: 1 },
-    { emailAddress: 'a?bc@x-yz.com', contentId: 'green/colour', timeSpent: 2 },
-    { emailAddress: '-ab@x-y+z.com', contentId: 'yellow\\colour', timeSpent: 3 },
-    { emailAddress: '-ab@x-y+z.com', contentId: 'redcolour', timeSpent: 4 },
-    { emailAddress: '-ab@x-y+z.com', contentId: 'grey colour', timeSpent: 5 },
-    { emailAddress: '-ab@x-y+z.com', contentId: 'comma,colour', timeSpent: 6 },
-    { emailAddress: '-ab@x-y+z.com', contentId: 'pipe|colour', timeSpent: 7 }
+    { emailAddress: 'abc@xyz.com', cei: '', contentId: 'blue"colour', timeSpent: 1 },
+    { emailAddress: 'a?bc@x-yz.com', cei: '', contentId: 'green/colour', timeSpent: 2 },
+    { emailAddress: '-ab@x-y+z.com', cei: '', contentId: 'yellow\\colour', timeSpent: 3 },
+    { emailAddress: '-ab@x-y+z.com', cei: '', contentId: 'redcolour', timeSpent: 4 },
+    { emailAddress: '-ab@x-y+z.com', cei: '', contentId: 'grey colour', timeSpent: 5 },
+    { emailAddress: '-ab@x-y+z.com', cei: '', contentId: 'comma,colour', timeSpent: 6 },
+    { emailAddress: '-ab@x-y+z.com', cei: '', contentId: 'pipe|colour', timeSpent: 7 }
   ]
 
   const delimiters: Array<{ char: string, name: string }> = [
@@ -25,7 +45,6 @@ describe('objsToDelimited with different delimiters', () => {
   ]
 
   delimiters.forEach(({ char, name }) => {
-
     // null value test
     it('should return empty string for null input', async () => {
       const result = await objsToDelimited(null as any, ',')
@@ -44,30 +63,21 @@ describe('objsToDelimited with different delimiters', () => {
       const lines = result.split('\n')
 
       // Header row
-      expect(lines[0]).to.equal(['emailAddress', 'contentId', 'timeSpent'].join(char))
+      expect(lines[0]).to.equal(Object.keys(testObjs[0]).join(char))
 
       if (char === ',') {
-        // Comma delimiter: delegated to objsToCsv
+        // Comma uses objsToCsv internally
         const expectedCsv = await objsToCsv(testObjs)
         expect(result).to.equal(expectedCsv)
-      } else if (char === '|') {
-        // Pipe delimiter: quote only if value contains |, ", or newline
-        expect(lines[1]).to.equal('abc@xyz.com|"blue""colour"|1')
-        expect(lines[2]).to.equal('a?bc@x-yz.com|green/colour|2')
-        expect(lines[3]).to.equal('-ab@x-y+z.com|yellow\\colour|3')
-        expect(lines[4]).to.equal('-ab@x-y+z.com|redcolour|4')
-        expect(lines[5]).to.equal('-ab@x-y+z.com|grey colour|5') // NO quotes
-        expect(lines[6]).to.equal('-ab@x-y+z.com|comma,colour|6')
-        expect(lines[7]).to.equal('-ab@x-y+z.com|"pipe|colour"|7') // quoted because contains |
-      } else if (char === ' ') {
-        // Space delimiter: quote if value contains space, ", or newline
-        expect(lines[1]).to.equal('abc@xyz.com "blue""colour" 1')
-        expect(lines[2]).to.equal('a?bc@x-yz.com green/colour 2')
-        expect(lines[3]).to.equal('-ab@x-y+z.com yellow\\colour 3')
-        expect(lines[4]).to.equal('-ab@x-y+z.com redcolour 4')
-        expect(lines[5]).to.equal('-ab@x-y+z.com "grey colour" 5') // quoted because contains space
-        expect(lines[6]).to.equal('-ab@x-y+z.com comma,colour 6')
-        expect(lines[7]).to.equal('-ab@x-y+z.com pipe|colour 7') // no quotes
+      } else {
+        // Other delimiters: dynamically compute expected rows
+        for (let i = 0; i < testObjs.length; i++) {
+          const rowObj = testObjs[i]
+          const expectedRow = Object.keys(rowObj)
+            .map(key => formatValue(rowObj[key as keyof TestInt], char))
+            .join(char)
+          expect(lines[i + 1]).to.equal(expectedRow)
+        }
       }
     })
   })

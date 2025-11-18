@@ -2,12 +2,16 @@ import * as azureBlobService from '../azure/storage/blob/service'
 import * as awsService from '../aws/s3/service'
 import * as database from '../../db/shared/database'
 import * as zip from '../file/zip'
-import * as csv from '../file/csv'
+import * as delimited from '../file/delimited'
 import sinon from 'sinon'
 import { JobsFile } from '../file/models'
-import { generateCourseCompletionsReportZip, generateOBTStatsAndUploadToS3 } from './reportService'
+import { generateCourseCompletionsReportZip, generateOBTStatsAndUploadToS3, generateSkillsCompletedLearnerRecordsAndUploadToSftp } from './reportService'
 import { expect } from 'chai'
 import * as learnerRecordService from '../learnerRecord/service'
+import * as tableService from '../azure/storage/table/service'
+import * as govNotifyClient from '../notification/govUKNotify/govUkNotify'
+import * as fileService from '../file/fileService'
+import * as uploadToSftp from '../sftp/service'
 
 const fakeCourseCompletionRow = {
   user_id: 'user_id',
@@ -22,6 +26,19 @@ const fakeCourseCompletionRow = {
   state: 'state',
   last_updated: 'last_updated',
   is_required: true
+}
+
+const fakeSkillsLearnerRecord = {
+  type: 'Create',
+  emailAddress: 'abc@xyz.com',
+  cei: '',
+  contentId: 'EBRBYRDfSoCJr75cxd2SQA',
+  progress: '100',
+  isCompleted: 'True',
+  result: '',
+  timeSpent: 30542651,
+  enrollmentDate: '2023-04-28',
+  completionDate: '024-04-16'
 }
 
 const fakeFile = new JobsFile('test.zip', Buffer.from('contents'))
@@ -44,7 +61,7 @@ describe('Report service tests', () => {
     const stubs: any = {}
     before(() => {
       stubs.getFormattedCourseRecords = sandbox.stub(learnerRecordService, 'getFormattedCourseRecords').resolves([{} as any])
-      stubs.objsToCsv = sandbox.stub(csv, 'objsToCsv').resolves(fakeCsv)
+      stubs.objsToCsv = sandbox.stub(delimited, 'objsToCsv').resolves(fakeCsv)
       stubs.uploadFile = sandbox.stub(awsService, 'uploadFile').resolves()
     })
     after(() => {
@@ -61,7 +78,7 @@ describe('Report service tests', () => {
     const stubs: any = {}
     before(() => {
       stubs.getCompletedCourseRecords = sandbox.stub(database, 'getCompletedCourseRecords').resolves([fakeCourseCompletionRow as any])
-      stubs.objsToCsv = sandbox.stub(csv, 'objsToCsv').resolves(fakeCsv)
+      stubs.objsToCsv = sandbox.stub(delimited, 'objsToCsv').resolves(fakeCsv)
       stubs.zipFiles = sandbox.stub(zip, 'zipFiles').resolves(fakeZipResult)
       stubs.uploadFile = sandbox.stub(azureBlobService, 'uploadFile').resolves(fakeUploadResult)
     })
@@ -81,6 +98,42 @@ describe('Report service tests', () => {
       expect(zipFilesArgs[0][0].filename).to.equal('course_completions_01_01_2023_to_01_01_2023.csv')
       expect(zipFilesArgs[1]).to.equal('course_completions_01_01_2023_to_01_01_2023')
       sandbox.assert.calledWith(stubs.uploadFile, 'mi-storage', fakeFile)
+    })
+  })
+  describe('Skills Completion Learner Record Test', () => {
+    const emailIds = 'abc1@xyz.com,abc2@xyz.com'
+    const stubs: any = {}
+    const notificationClient: any = {}
+    notificationClient.infoNotification = sandbox.stub()
+    before(() => {
+      const stubGetJobData = sandbox.stub(tableService, 'getJobData')
+      stubGetJobData.withArgs('skillsSync', 'lastFileOperation').resolves('Create')
+      stubGetJobData.withArgs('skillsSync', 'lastFileDate').resolves('2025-01-01')
+      stubGetJobData.withArgs('skillsSync', 'lastFileSequenceNumber').resolves('')
+      stubGetJobData.withArgs('skillsSync', 'emailIds').resolves(emailIds)
+      stubGetJobData.withArgs('skillsSync', 'sshPrivateKey').resolves('some-value')
+      stubs.getDateFromTable = sandbox.stub(tableService, 'getDateFromTable')
+      stubs.getSkillsCompletedLearnerRecords = sandbox.stub(database, 'getSkillsCompletedLearnerRecords').resolves([fakeSkillsLearnerRecord as any])
+      stubs.objsToDelimited = sandbox.stub(delimited, 'objsToDelimited').resolves(fakeCsv)
+      stubs.uploadFile = sandbox.stub(azureBlobService, 'uploadFile').resolves(fakeUploadResult)
+      stubs.writeFile = sandbox.stub(fileService, 'writeFile').resolves()
+      stubs.uploadToSftp = sandbox.stub(uploadToSftp, 'uploadToSftp').resolves(true)
+      stubs.unlink = sandbox.stub(fileService, 'unlink').resolves()
+      stubs.zipFiles = sandbox.stub(zip, 'zipFiles').resolves(fakeZipResult)
+      stubs.sendSkillsFileNotification = sandbox.stub(govNotifyClient, 'sendSkillsFileNotification')
+      stubs.sendSkillsFilePasswordNotification = sandbox.stub(govNotifyClient, 'sendSkillsFilePasswordNotification')
+      stubs.upsertJobData = sandbox.stub(tableService, 'upsertJobData')
+    })
+    after(() => {
+      sandbox.restore()
+    })
+    it('Should run successfully', async () => {
+      const res = await generateSkillsCompletedLearnerRecordsAndUploadToSftp('skillsSync')
+      expect(res).to.contain('Skills completion learner record data file \'ER_Create_')
+      expect(res).to.contain('1.csv\' successfully uploaded to sftp server.')
+      expect(res).to.contain(' Data zip file not sent via email because no email recipients are defined.')
+      sandbox.assert.calledWith(stubs.getSkillsCompletedLearnerRecords, ['abc1@xyz.com', 'abc2@xyz.com'], undefined)
+      sandbox.assert.calledWith(stubs.objsToDelimited, [fakeSkillsLearnerRecord])
     })
   })
 })

@@ -41,10 +41,11 @@ const config = {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      csvFilenamePrefixCreate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_CREATE ?? 'ER_Create',
-      csvFilenamePrefixUpdate: env.SKILLS_SYNC_CSV_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
-      csvFileDataDelimiter: env.SKILLS_SYNC_CSV_FILE_DATA_DELIMITER ?? ',',
-      sendBlankCsvFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_CSV_FILE ?? 'true') as boolean,
+      dataFilenamePrefixCreate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_CREATE ?? 'ER_Create',
+      dataFilenamePrefixUpdate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+      dataFilenameExtension: env.SKILLS_SYNC_DATA_FILENAME_EXTENSION ?? 'csv',
+      dataFileDelimiter: env.SKILLS_SYNC_DATA_FILE_DELIMITER ?? ',',
+      sendBlankDataFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_DATA_FILE ?? 'true') as boolean,
       emailRecipients: getArrayFromCsvEnvVar(env.SKILLS_SYNC_RECIPIENTS)
     },
     orgDomains: {

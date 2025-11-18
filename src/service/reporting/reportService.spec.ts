@@ -129,9 +129,9 @@ describe('Report service tests', () => {
     })
     it('Should run successfully', async () => {
       const res = await generateSkillsCompletedLearnerRecordsAndUploadToSftp('skillsSync')
-      expect(res).to.contain('Skills completion learner record csv file \'ER_Create_')
+      expect(res).to.contain('Skills completion learner record data file \'ER_Create_')
       expect(res).to.contain('1.csv\' successfully uploaded to sftp server.')
-      expect(res).to.contain(' Csv zip file not sent via email because no email recipients are defined.')
+      expect(res).to.contain(' Data zip file not sent via email because no email recipients are defined.')
       sandbox.assert.calledWith(stubs.getSkillsCompletedLearnerRecords, ['abc1@xyz.com', 'abc2@xyz.com'], undefined)
       sandbox.assert.calledWith(stubs.objsToDelimited, [fakeSkillsLearnerRecord])
     })

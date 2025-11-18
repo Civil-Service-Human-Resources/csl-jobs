@@ -8,7 +8,7 @@ import dayjs from 'dayjs'
 import * as learnerRecordService from '../learnerRecord/service'
 import * as awsService from '../aws/s3/service'
 import { uploadToSftp } from '../sftp/service'
-import { unlink, writeFile } from '../file/fileService'
+import { unlink, validateBaseDirAndFileName, validateFileName, writeFile } from '../file/fileService'
 import path from 'path'
 import log from 'log'
 import config from '../../config'
@@ -113,8 +113,10 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   await uploadFile(dataFile)
   log.info(`Skills data file uploaded to Azure Blob Storage: ${dataFileName}`)
 
+  validateFileName(dataFileName)
   // Write to local folder
   const localTempDir = os.tmpdir()
+  validateBaseDirAndFileName(localTempDir, dataFileName)
   const localFilePath = path.join(localTempDir, dataFileName)
   await writeFile(localFilePath, dataFile.contents, 'utf8')
   log.info(`Skills local temporary file written: ${localFilePath}`)

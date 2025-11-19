@@ -53,14 +53,14 @@ describe('validateBaseDirAndFileName', () => {
   it('throws if resolved path escapes the base directory', () => {
     expect(() =>
       validateBaseDirAndFileName(baseDir, '../secret.txt')
-    ).to.throw('Blocked path traversal attempt')
+    ).to.throw('File name must not contain slashes: ../secret.txt')
   })
 
   it('throws for absolute file paths', () => {
     const abs = path.resolve('/etc/passwd')
     expect(() =>
       validateBaseDirAndFileName(baseDir, abs)
-    ).to.throw('Blocked path traversal attempt: /etc/passwd')
+    ).to.throw('File name must not contain slashes: /etc/passwd')
   })
 
   it('throws for invalid characters in file name', () => {
@@ -127,7 +127,7 @@ describe('validateBaseDirAndFileName using os.tmpdir()', () => {
   it('throws when filename attempts directory traversal', () => {
     expect(() =>
       validateBaseDirAndFileName(localTempDir, '../hack.txt')
-    ).to.throw('Blocked path traversal attempt')
+    ).to.throw('File name must not contain slashes: ../hack.txt')
   })
 
   it('throws for absolute paths', () => {
@@ -135,7 +135,7 @@ describe('validateBaseDirAndFileName using os.tmpdir()', () => {
 
     expect(() =>
       validateBaseDirAndFileName(localTempDir, abs)
-    ).to.throw('Blocked path traversal attempt: /etc/passwd')
+    ).to.throw('File name must not contain slashes: /etc/passwd')
   })
 
   it('throws for invalid characters in filename', () => {

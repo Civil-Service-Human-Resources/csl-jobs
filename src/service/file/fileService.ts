@@ -18,6 +18,10 @@ export function validateBaseDirAndFileName (baseDir: string, fileName: string): 
     throw new Error(`Blocked path traversal attempt: ${fileName}`)
   }
 
+  if (baseDir.includes('..')) {
+    throw new Error(`Invalid directory: ${baseDir}`)
+  }
+
   validateFileName(fileName)
 
   return resolvedPath

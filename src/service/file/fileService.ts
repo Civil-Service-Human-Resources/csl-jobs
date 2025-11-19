@@ -10,6 +10,8 @@ export const unlink = async (path: string): Promise<void> => {
 }
 
 export function validateBaseDirAndFileName (baseDir: string, fileName: string): string {
+  validateFileName(fileName)
+
   if (baseDir.includes('..')) {
     throw new Error(`Invalid directory: ${baseDir}`)
   }
@@ -21,8 +23,6 @@ export function validateBaseDirAndFileName (baseDir: string, fileName: string): 
   if (!resolvedPath.startsWith(path.resolve(baseDir))) {
     throw new Error(`Blocked path traversal attempt: ${fileName}`)
   }
-
-  validateFileName(fileName)
 
   return resolvedPath
 }

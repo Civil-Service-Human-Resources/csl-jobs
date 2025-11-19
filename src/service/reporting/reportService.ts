@@ -117,7 +117,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   // Write to local folder
   const localTempDir = os.tmpdir()
   validateBaseDirAndFileName(localTempDir, dataFileName)
-  const localFilePath = path.join(localTempDir, dataFileName)
+  const localFilePath = path.join(localTempDir, dataFileName.replace(/\.\./g, ''))
   await writeFile(localFilePath, dataFile.contents, 'utf8')
   log.info(`Skills local temporary file written: ${localFilePath}`)
 

@@ -107,6 +107,11 @@ describe('validateFileName', () => {
   it('allows filenames without slashes and without ".."', () => {
     expect(() => { validateFileName('report-01.txt') }).to.not.throw()
   })
+
+  it('throws for invalid characters in file name', () => {
+    expect(() => { validateFileName('bad name.csv') }).to.throw('Invalid characters in file name')
+    expect(() => { validateFileName('test!.txt') }).to.throw('Invalid characters in file name')
+  })
 })
 
 describe('validateBaseDirAndFileName using os.tmpdir()', () => {

@@ -18,15 +18,7 @@ export function validateBaseDirAndFileName (baseDir: string, fileName: string): 
     throw new Error(`Blocked path traversal attempt: ${fileName}`)
   }
 
-  // Optional: disallow absolute paths entirely
-  if (path.isAbsolute(fileName)) {
-    throw new Error(`Absolute paths not allowed: ${fileName}`)
-  }
-
-  // Optional: ensure only safe characters are used
-  if (!/^[a-zA-Z0-9._-]+$/.test(fileName)) {
-    throw new Error(`Invalid characters in file name: ${fileName}`)
-  }
+  validateFileName(fileName)
 
   return resolvedPath
 }
@@ -37,5 +29,13 @@ export function validateFileName (fileName: string): void {
   }
   if (fileName.includes('..')) {
     throw new Error(`Invalid file name: ${fileName}`)
+  }
+  // Disallow absolute paths entirely
+  if (path.isAbsolute(fileName)) {
+    throw new Error(`Absolute paths not allowed: ${fileName}`)
+  }
+  // Ensure only safe characters are used
+  if (!/^[a-zA-Z0-9._-]+$/.test(fileName)) {
+    throw new Error(`Invalid characters in file name: ${fileName}`)
   }
 }

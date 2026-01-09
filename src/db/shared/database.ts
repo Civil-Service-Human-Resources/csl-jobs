@@ -73,11 +73,7 @@ const getSkillsCompletedLearnerRecordsSQL = (): string => {
         else "False"
         end as isCompleted,
     '' as result,
-    coalesce(
-        case
-            when min(lre.event_timestamp) is not null
-                then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
-            end, '') as timeSpent,
+    '' as timeSpent,
     coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
     coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
   from learner_record.learner_records lr
@@ -104,11 +100,7 @@ const getSkillsDeltaCompletedLearnerRecordsSQL = (): string => {
         else "False"
         end as isCompleted,
     '' as result,
-    coalesce(
-        case
-            when min(lre.event_timestamp) is not null
-                then cast(greatest(timestampdiff(second, lr.created_timestamp, min(lre.event_timestamp)), 0) as char)
-            end, '') as timeSpent,
+    '' as timeSpent,
     coalesce(date_format(lr.created_timestamp, '%Y-%m-%d'), '') as enrollmentDate,
     coalesce(date_format(min(lre.event_timestamp), '%Y-%m-%d'), '') as completionDate
   from learner_record.learner_records lr

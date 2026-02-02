@@ -67,7 +67,7 @@ describe('HMRCSkillsJob', () => {
   let utilsStub: sinon.SinonStubbedInstance<typeof utils>
   let notifyStub: sinon.SinonStubbedInstance<typeof notify>
 
-  before(() => {
+  before(async () => {
     notifyStub = sandbox.stub(notify)
     databaseStub = sandbox.stub(db)
     dateServiceStub = sandbox.stub(dateService)

@@ -104,5 +104,5 @@ __azurite_db*__.json
 .idea/
 
 # Docker
-ftp_data/
+docker/data/
 certs/

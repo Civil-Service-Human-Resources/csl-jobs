@@ -55,4 +55,6 @@ These tests require Docker to run, as they rely on two containers:
 - Azurite
 - FTPS server
 
-`testcontainers` is used to automatically run both of these containers. They can be run for more thorough local testing with the Docker compose file at `docker/docker-compose.yml` 
+`testcontainers` is used to automatically run both of these containers.
+
+They can be run for more thorough local testing with the Docker compose file at `docker/docker-compose.yml` in conjunction with `npm run integration-test-no-testcontainers`. Azure Storage Explorer and local volumes can then be used to further validate test outcomes. 

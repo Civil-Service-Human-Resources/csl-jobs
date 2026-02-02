@@ -1,6 +1,7 @@
 import { GenericContainer, Wait } from 'testcontainers'
 import path from 'path'
 
+const testContainers = JSON.parse(process.env.TESTCONTAINERS ?? 'true') === true
 const dockerFilepath = path.join(import.meta.dirname, '../../docker')
 const ftpsDockerfile = `${dockerFilepath}/ftps`
 
@@ -23,7 +24,7 @@ const containers = [{
   }
 }]
 
-export async function mochaGlobalSetup () {
+async function setupContainers () {
   try {
     for (const container of containers) {
       console.log(`Attempting to build ${container.name} container`)
@@ -39,14 +40,25 @@ export async function mochaGlobalSetup () {
   }
 }
 
-export async function mochaGlobalTeardown () {
-  await stopContainers()
-}
-
 async function stopContainers () {
   const containerToStop = containers.filter(c => c.obj !== undefined)
   console.log(`Stopping ${containerToStop.length} containers`)
   for (const container of containerToStop) {
     await container.obj.stop()
+  }
+}
+
+export async function mochaGlobalSetup () {
+  if (testContainers) {
+    console.log('Using testcontainers')
+    await setupContainers()
+  } else {
+    console.log('TESTCONTAINERS was false so not using test containers')
+  }
+}
+
+export async function mochaGlobalTeardown () {
+  if (testContainers) {
+    await stopContainers()
   }
 }

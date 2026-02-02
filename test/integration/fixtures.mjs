@@ -3,13 +3,13 @@ import path from 'path'
 
 const dockerFilepath = path.join(import.meta.dirname, '../../docker')
 const ftpsDockerfile = `${dockerFilepath}/ftps`
-const maxAttempts = 3
 
 const containers = [{
   name: 'azurite',
   build: async () => {
     return await new GenericContainer('mcr.microsoft.com/azure-storage/azurite')
-      .withExposedPorts({ container: 10000, host: 10000 }, { container: 10001, host: 10001 }, { container: 10002, host: 10002 }).start()
+      .withExposedPorts({ container: 10000, host: 10000 }, { container: 10001, host: 10001 }, { container: 10002, host: 10002 })
+      .withWaitStrategy(Wait.forLogMessage('Azurite Table service is successfully listening at http://0.0.0.0:10002')).start()
   }
 },
 {

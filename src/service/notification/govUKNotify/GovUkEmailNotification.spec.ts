@@ -3,11 +3,11 @@ import { GovUkEmailNotification, GovUkNotification } from './GovUkEmailNotificat
 
 describe('GovUkEmailNotification tests', () => {
   it('Should return true to indicate an email can be sent', () => {
-    const notification = new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, 'templateId', ['recipient1'])
+    const notification = new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, 'templateId')
     expect(notification.canSend()).eq(true)
   })
   it('Should return false to indicate an email cannot be sent', () => {
-    const notification = new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, '', [])
+    const notification = new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, '')
     expect(notification.canSend()).eq(false)
   })
 })

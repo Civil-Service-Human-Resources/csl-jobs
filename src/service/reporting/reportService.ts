@@ -142,19 +142,19 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   } catch (err) {
     log.error(`Skills - Failed to delete temporary file ${localFilePath}:`, err)
   }
-
-  log.info(`config.jobs.skillsCompletedLearnerRecords.emailRecipients.length: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.length}'`)
-  if (config.jobs.skillsCompletedLearnerRecords.emailRecipients.length > 0) {
-    log.debug(`config.jobs.skillsCompletedLearnerRecords.emailRecipients: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+  const emailRecipients = config.jobs.skillsCompletedLearnerRecords.emailRecipients
+  log.info(`emailRecipients.length: '${emailRecipients.length}'`)
+  if (emailRecipients.length > 0) {
+    log.debug(`emailRecipients: '${emailRecipients.toString()}'`)
     log.debug('Skills - Creating zip file to be sent by email')
     const zipFile = await zipFiles([dataFile], dataFile.filename)
     const uploadResult = await uploadFile(zipFile.result)
     log.info(`Skills zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
     const description = `Skills learner record extract: ${dataFile.filename}`
-    await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description),
-      govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description)]
+    await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description, emailRecipients),
+      govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description, emailRecipients)]
     )
-    log.info(`Skills zip File '${zipFile.result.filename}' successfully sent via email to: '${config.jobs.skillsCompletedLearnerRecords.emailRecipients.toString()}'`)
+    log.info(`Skills zip File '${zipFile.result.filename}' successfully sent via email to: '${emailRecipients.toString()}'`)
     resultText = resultText + ` Zip file '${zipFile.result.filename}' successfully sent via email.`
   } else {
     emailSentSuccess = false

@@ -8,7 +8,8 @@ const localJobs: Map<string, JobType> = new Map<string, JobType>([
   ['generateCourseCompletions', JobType.COURSE_COMPLETIONS],
   ['orgDomains', JobType.ORG_DOMAINS],
   ['obtStats', JobType.OBT_STATS],
-  ['generateSkillsCompletedLearnerRecords', JobType.SKILLS_COMPLETED_LEARNER_RECORDS]
+  ['generateSkillsCompletedLearnerRecords', JobType.SKILLS_COMPLETED_LEARNER_RECORDS],
+  ['generateHMRCSkillsLearnerRecords', JobType.HMRC_SKILLS_COMPLETED_LEARNER_RECORDS]
 ])
 
 const args = parseArgs({

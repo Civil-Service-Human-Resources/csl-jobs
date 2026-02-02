@@ -12,9 +12,9 @@ import { unlink, validateBaseDirAndFileName, validateFileName, writeFile } from 
 import path from 'path'
 import log from 'log'
 import config from '../../config'
-import * as tableService from '../azure/storage/table/service'
 import os from 'os'
 import * as govNotifyClient from '../notification/govUKNotify/govUkNotify'
+import { type TableService } from '../azure/storage/table/service'
 
 const MI_BLOB_CONTAINER = 'mi-storage'
 
@@ -30,6 +30,7 @@ interface SkillsCompletedLearnerRecordsFileDetails {
 }
 
 export const uploadFile = async (file: JobsFile): Promise<UploadResult> => {
+  log.info(`Uploading file ${file.filename} to Azure blob ${MI_BLOB_CONTAINER}`)
   return await azureBlobService.uploadFile(MI_BLOB_CONTAINER, file)
 }
 
@@ -65,18 +66,18 @@ export const generateCourseCompletionsReportZip = async (lastSuccessTimestamp: D
   }
 }
 
-export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (tablePartitionKey: string): Promise<string> => {
+export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (tableService: TableService): Promise<string> => {
   const currentTimeStamp = new Date().toISOString()
   log.info(`Skills data extract timestamp: '${currentTimeStamp}'`)
   const lastFile: SkillsCompletedLearnerRecordsFileDetails = {
-    operation: await tableService.getJobData(tablePartitionKey, 'lastFileOperation'),
-    date: await tableService.getJobData(tablePartitionKey, 'lastFileDate'),
-    sequenceNumber: await tableService.getJobData(tablePartitionKey, 'lastFileSequenceNumber')
+    operation: await tableService.getValueFromTable('lastFileOperation'),
+    date: await tableService.getValueFromTable('lastFileDate'),
+    sequenceNumber: await tableService.getValueFromTable('lastFileSequenceNumber')
   }
   let sftpUploadSuccess = true
   let emailSentSuccess = true
 
-  const lastReportTimestamp = await tableService.getDateFromTable(tablePartitionKey, 'lastReportTimestamp')
+  const lastReportTimestamp = await tableService.getDateFromTable('lastReportTimestamp')
   // Defining data filename
   const newFormattedDate = dayjs().format('DDMMYYYY')
   const newSequenceNumber = ((lastFile.sequenceNumber != null) && (lastFile.date != null) && newFormattedDate === lastFile.date) ? parseInt(lastFile.sequenceNumber) + 1 : 1
@@ -93,7 +94,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   const dataFilenameExtension = config.jobs.skillsCompletedLearnerRecords.dataFilenameExtension
   const dataFileName = getSkillsDataFilename(dataFilenamePrefix, dataFilenameExtension, lastFile)
   log.info(`Skills data file name: ${dataFileName}`)
-  const emailIdsFromTS = await tableService.getJobData(tablePartitionKey, 'emailIds')
+  const emailIdsFromTS = await tableService.getValueFromTable('emailIds')
   const emailIds = emailIdsFromTS !== undefined ? emailIdsFromTS.split(',') : []
   const completions = await getSkillsCompletedLearnerRecords(emailIds, lastReportTimestamp)
   const dataFileDelimiter = config.jobs.skillsCompletedLearnerRecords.dataFileDelimiter
@@ -121,7 +122,7 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
   await writeFile(localFilePath, dataFile.contents, 'utf8')
   log.info(`Skills local temporary file written: ${localFilePath}`)
 
-  const sshPrivateKey = await tableService.getJobData(tablePartitionKey, 'sshPrivateKey')
+  const sshPrivateKey = await tableService.getValueFromTable('sshPrivateKey')
 
   // Upload to SFTP
   const sftpUploadResult = await uploadToSftp(localFilePath, dataFileName, sshPrivateKey)
@@ -163,14 +164,14 @@ export const generateSkillsCompletedLearnerRecordsAndUploadToSftp = async (table
 
   if (sftpUploadSuccess || emailSentSuccess) {
     // Update Azure storage table entries
-    await tableService.upsertJobData(tablePartitionKey, 'lastFileOperation', lastFile.operation)
-    await tableService.upsertJobData(tablePartitionKey, 'lastFileDate', lastFile.date)
-    await tableService.upsertJobData(tablePartitionKey, 'lastFileSequenceNumber', lastFile.sequenceNumber.toString())
-    await tableService.upsertJobData(tablePartitionKey, 'lastReportTimestamp', currentTimeStamp)
-    log.info(`Skills lastReportTimestamp is updated in the '${tablePartitionKey}' Azure partition: '${currentTimeStamp}'`)
+    await tableService.upsertValueInTable('lastFileOperation', lastFile.operation)
+    await tableService.upsertValueInTable('lastFileDate', lastFile.date)
+    await tableService.upsertValueInTable('lastFileSequenceNumber', lastFile.sequenceNumber.toString())
+    await tableService.upsertValueInTable('lastReportTimestamp', currentTimeStamp)
+    log.info(`Skills lastReportTimestamp is updated in the '${tableService.partition}' Azure partition: '${currentTimeStamp}'`)
     log.info(`Skills completion learner record data file '${dataFile.filename}' successfully generated and processed.`)
   } else {
-    log.info(`Skills lastReportTimestamp not updated in the '${tablePartitionKey}' Azure partition because neither the data file uploaded to sftp nor zip file sent via email.`)
+    log.info(`Skills lastReportTimestamp not updated in the '${tableService.partition}' Azure partition because neither the data file uploaded to sftp nor zip file sent via email.`)
   }
 
   return resultText

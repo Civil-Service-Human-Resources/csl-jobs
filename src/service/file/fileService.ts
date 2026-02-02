@@ -1,5 +1,21 @@
 import * as fs from 'fs/promises'
 import path from 'path'
+import log from 'log'
+import os from 'os'
+import { type JobsFile } from './models'
+
+export const saveFile = async (dataFile: JobsFile): Promise<string> => {
+  log.info(`Skills data file uploaded to Azure Blob Storage: ${dataFile.filename}`)
+
+  validateFileName(dataFile.filename)
+  // Write to local folder
+  const localTempDir = os.tmpdir()
+  validateBaseDirAndFileName(localTempDir, dataFile.filename)
+  const localFilePath = path.join(localTempDir, dataFile.filename.replace(/\.\./g, ''))
+  await writeFile(localFilePath, dataFile.contents, 'utf8')
+  log.info(`Skills local temporary file written: ${localFilePath}`)
+  return localFilePath
+}
 
 export const writeFile = async (path: string, data: Buffer, encoding: BufferEncoding = 'utf8'): Promise<void> => {
   await fs.writeFile(path, data, encoding)

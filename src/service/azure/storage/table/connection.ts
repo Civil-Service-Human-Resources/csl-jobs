@@ -6,7 +6,7 @@ const { azure: { storage } } = config
 
 export const getTableClient = async (tableName: string): Promise<TableClient> => {
   log.debug('Creating table service client')
-  const tableClient = TableClient.fromConnectionString(storage.accountConnectionString, storage.table.tableName, {
+  const tableClient = TableClient.fromConnectionString(storage.accountConnectionString, tableName, {
     allowInsecureConnection: true
   })
   log.debug(`Creating table '${tableName}' if it doesn't exist`)

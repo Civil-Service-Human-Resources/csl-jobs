@@ -1,7 +1,7 @@
-import * as crypto from 'crypto'
 import archiver from 'archiver'
 import { WritableStreamBuffer } from 'stream-buffers'
 import { type JobsFile } from './models'
+import { generatePassword } from '../../util/utils'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'))
@@ -16,10 +16,6 @@ const getOutBuffer = (): WritableStreamBuffer => {
     initialSize: (1000 * 1024),
     incrementAmount: (1000 * 1024)
   })
-}
-
-const generatePassword = (): string => {
-  return crypto.webcrypto.getRandomValues(new BigUint64Array(1))[0].toString(36)
 }
 
 const createEncryptedArchive = async (files: JobsFile[], password: string): Promise<Buffer> => {

@@ -1,6 +1,7 @@
 import log from 'log'
 import { type NotificationClient } from '../notification/notifications'
 import { type JobResult } from './jobService'
+import { type JobTableService } from '../azure/storage/table/jobTableService'
 
 export abstract class Job {
   constructor (protected readonly notificationClient: NotificationClient) {}
@@ -22,4 +23,10 @@ export abstract class Job {
 
   protected abstract runJob (): Promise<JobResult>
   public abstract getName (): string
+}
+
+export abstract class TableJob extends Job {
+  constructor (notificationClient: NotificationClient, protected tableService: JobTableService) {
+    super(notificationClient)
+  }
 }

@@ -16,11 +16,13 @@ export class GovUkNotifier {
       try {
         await Promise.all(notification.recipients.map(async r => {
           log.debug(`Sending email to '${r}'`)
-          return await this.client.sendEmail(notification.templateId, r, {
+          await this.client.sendEmail(notification.templateId, r, {
             personalisation
           })
+          log.debug(`Email ${notification.notificationId} sent successfully`)
         }))
       } catch (error) {
+        console.log(error)
         const req = error.response
         log.error(`There were error(s) sending a '${notification.notificationId}' notify email:`)
         const errors = req.data.errors as any[]

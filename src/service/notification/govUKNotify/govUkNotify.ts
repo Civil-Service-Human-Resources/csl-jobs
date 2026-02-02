@@ -20,31 +20,34 @@ const notifications: GovUkEmailNotification[] = [
   new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword, skillsCompletedLearnerRecords.emailRecipients)
 ]
 
-const sendEmail = async (notificationType: GovUkNotification, personalisation: any): Promise<void> => {
+const sendEmail = async (notificationType: GovUkNotification, personalisation: any, recipientOverride?: string[]): Promise<void> => {
   const notifier = getNotifier()
   if (notifier !== undefined) {
     const notification = notifications.filter(n => n.notificationId === notificationType)[0]
+    if (recipientOverride !== undefined && recipientOverride.length > 0) {
+      notification.recipients = recipientOverride
+    }
     await notifier.send(notification, personalisation)
   } else {
     log.warn(`Notification '${notificationType}' cannot be sent as the Govuk notifier has not been configured`)
   }
 }
 
-export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string): Promise<void> => {
+export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string, emailOverride?: string[]): Promise<void> => {
   const personalisation: MIReportPersonalisation = {
     description,
     linkExpiryInDays: uploadResult.expiryInDays,
     link: uploadResult.link
   }
-  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD, personalisation)
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD, personalisation, emailOverride)
 }
 
-export const sendSkillsFilePasswordNotification = async (password: string, description: string): Promise<void> => {
+export const sendSkillsFilePasswordNotification = async (password: string, description: string, emailOverride?: string[]): Promise<void> => {
   const personalisation: PasswordPersonalisation = {
     description,
     password
   }
-  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, personalisation)
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, personalisation, emailOverride)
 }
 
 export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: Date, uploadResult: UploadResult): Promise<void> => {

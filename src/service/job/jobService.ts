@@ -9,22 +9,34 @@ import { ClearRedundantTokensJob } from './identity/ClearRedundantTokensJob'
 import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
 import { OrgDomainsJob } from './orgDomains/orgDomainsJob'
 import { OBTStatsJob } from './MI/OBTStats'
-
-const notificationClient = getNotificationClient()
+import { HMRCSkillsJob } from './MI/HMRCSkillsJob'
+import { createFtpsService } from '../ftp/builder'
+import { type TableService } from '../azure/storage/table/service'
+import { JobTableService } from '../azure/storage/table/jobTableService'
 
 export interface JobResult {
   text: string
 }
 
 export const runJob = async (jobType: JobType): Promise<void> => {
+  const notificationClient = getNotificationClient(jobType.valueOf())
   let job: Job | undefined
+  let tableService: TableService | undefined
   switch (jobType) {
     case JobType.COURSE_COMPLETIONS:
-      job = new CourseCompletionsJob(notificationClient, config.jobs.courseCompletions.defaultFallbackPeriod)
+      tableService = new JobTableService('courseCompletions')
+      job = new CourseCompletionsJob(notificationClient, config.jobs.courseCompletions.defaultFallbackPeriod, tableService)
       break
     case JobType.SKILLS_COMPLETED_LEARNER_RECORDS:
-      job = new SkillsCompletionsJob(notificationClient, config.jobs.skillsCompletedLearnerRecords.defaultFallbackPeriod)
+      tableService = new JobTableService('skillsSync')
+      job = new SkillsCompletionsJob(notificationClient, config.jobs.skillsCompletedLearnerRecords.defaultFallbackPeriod, tableService)
       break
+    case JobType.HMRC_SKILLS_COMPLETED_LEARNER_RECORDS: {
+      const ftpsService = createFtpsService(config.jobs.HMRCLearnerRecords.ftpsConfig)
+      tableService = new JobTableService('HMRCSkillsSync')
+      job = new HMRCSkillsJob(notificationClient, config.jobs.HMRCLearnerRecords, ftpsService, tableService)
+      break
+    }
     case JobType.REDUNDANT_TOKEN:
       job = new ClearRedundantTokensJob(notificationClient)
       break
@@ -35,9 +47,10 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       job = new OrgDomainsJob(notificationClient)
       break
     case JobType.OBT_STATS:
+      tableService = new JobTableService('obtStats')
       job = new OBTStatsJob(notificationClient, config.jobs.obtStats.defaultFallbackPeriod,
         config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
-        config.jobs.obtStats.courseIds)
+        config.jobs.obtStats.courseIds, tableService)
       break
     default:
       job = undefined

@@ -9,7 +9,7 @@ const { azure: { siteName }, notifications: { notificationLevel, slack } } = con
 
 export class NotificationClient {
   constructor (private readonly notifiers: Notifier[], private readonly notificationLevel: NOTIFICATION_LEVEL,
-    private readonly appName: string
+    private readonly appName: string, private readonly jobName: string
   ) {}
 
   infoNotification = async (message: string): Promise<void> => {
@@ -21,7 +21,7 @@ export class NotificationClient {
   }
 
   private readonly notify = async (message: string, level: NOTIFICATION_LEVEL): Promise<void> => {
-    const fmtMsg = `${this.appName} | ${message}`
+    const fmtMsg = `${this.appName} | ${this.jobName} | ${message}`
     log.info(fmtMsg)
     if (level.valueOf() >= this.notificationLevel.valueOf()) {
       for (const notifier of this.notifiers) {
@@ -59,7 +59,7 @@ const getNotifiers = (): Notifier[] => {
   return _notifiers
 }
 
-export const getNotificationClient = (): NotificationClient => {
+export const getNotificationClient = (jobName: string): NotificationClient => {
   const notifiers = getNotifiers()
-  return new NotificationClient(notifiers, notificationLevel, siteName)
+  return new NotificationClient(notifiers, notificationLevel, siteName, jobName)
 }

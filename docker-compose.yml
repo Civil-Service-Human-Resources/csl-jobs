@@ -1,0 +1,15 @@
+services:
+  ftps-server:
+    image: delfer/alpine-ftp-server
+    container_name: ftps_test_server
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+    environment:
+      - USERS=testuser|password123|/home/testuser
+      - ADDRESS=localhost
+      - TLS_CERT=/etc/ssl/private/cert.pem
+      - TLS_KEY=/etc/ssl/private/key.pem
+    volumes:
+      - ./ftp_data:/home/testuser
+      - ./certs:/etc/ssl/private:ro

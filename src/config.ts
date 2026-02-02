@@ -4,13 +4,19 @@ import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 import { getArrayFromCsvEnvVar } from './util/utils'
 
-dotenv.config({
-  path: path.join(__dirname, '/.env')
-})
-logNode()
 const env = process.env
 
+const dotEnvPath = env.DOT_ENV ?? './.env'
+
+const dotenvFilePath = path.join(__dirname, dotEnvPath)
+console.log(`DOT_ENV env var detected; loading env from .env file "${dotenvFilePath}"`)
+dotenv.config({
+  path: dotenvFilePath
+})
+logNode()
+
 const config = {
+  logLevel: (env.LOG_LEVEL ?? 'debug').toLowerCase(),
   database: {
     server: env.DATABASE_SERVER ?? 'localhost',
     username: env.DATABASE_USER ?? 'root',
@@ -36,6 +42,26 @@ const config = {
       notifyPasswordTemplate: env.NOTIFY_COURSE_COMPLETION_PASSWORD_TEMPLATE ?? '',
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(','),
       runOnStartup: JSON.parse(env.COURSE_COMPLETIONS_RUN_ON_STARTUP ?? 'false') as boolean
+    },
+    HMRCLearnerRecords: {
+      cron: env.HMRC_LR_CRON ?? '0 2 0 * * *',
+      defaultFallbackDuration: env.HMRC_LR_SYNC_FALLBACK_DURATION ?? 'P1D',
+      runOnStartup: JSON.parse(env.HMRC_LR_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
+      file: {
+        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'ER_Create',
+        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+        extension: env.HMRC_LR_DATA_FILENAME_EXTENSION ?? 'csv',
+        fileDelimiter: env.HMRC_LR_DATA_FILE_DELIMITER ?? ',',
+        remoteDir: env.HMRC_LR_DATA_FILE_REMOTE_DIR ?? '/home/testuser'
+      },
+      sendBlankFile: JSON.parse(env.HMRC_LR_SEND_BLANK_DATA_FILE ?? 'true') as boolean,
+      emailRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_RECIPIENTS),
+      ftpsConfig: {
+        host: env.HMRC_LR_SYNC_FTPS_HOST ?? 'localhost',
+        user: env.HMRC_LR_SYNC_FTPS_USER ?? 'testuser',
+        port: parseInt(env.HMRC_LR_SYNC_FTPS_PORT ?? '21'),
+        password: env.HMRC_LR_SYNC_FTPS_PASSWORD ?? 'password123'
+      }
     },
     skillsCompletedLearnerRecords: {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',

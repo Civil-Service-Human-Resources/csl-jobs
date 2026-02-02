@@ -111,13 +111,18 @@ const getSkillsDeltaCompletedLearnerRecordsSQL = (): string => {
   order by type, i.email, lr.created_timestamp, lre.event_timestamp;`
 }
 
-export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp: CustomDate | undefined): Promise<ISkillsLearnerRecord[]> => {
+export const getSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp?: CustomDate): Promise<ISkillsLearnerRecord[]> => {
+  return lastRunTimestamp === undefined ? (await getNewSkillsCompletedLearnerRecords(emailIds)) : (await getDeltaSkillsCompletedLearnerRecords(emailIds, lastRunTimestamp))
+}
+
+export const getNewSkillsCompletedLearnerRecords = async (emailIds: string[]): Promise<ISkillsLearnerRecord[]> => {
   const SQL = getSkillsCompletedLearnerRecordsSQL()
+  log.info('Running SQL to fetch initial load for skills data')
+  return await fetchRows<ISkillsLearnerRecord>(SQL, [emailIds])
+}
+
+export const getDeltaSkillsCompletedLearnerRecords = async (emailIds: string[], lastRunTimestamp: CustomDate): Promise<ISkillsLearnerRecord[]> => {
   const SQL_DELTA = getSkillsDeltaCompletedLearnerRecordsSQL()
-  if (lastRunTimestamp === undefined) {
-    log.info('lastRunTimestamp is not available therefore running initial full load')
-    return await fetchRows<ISkillsLearnerRecord>(SQL, [emailIds])
-  }
   log.info(`lastRunTimestamp: '${lastRunTimestamp.toISOString()}' is available therefore running delta load`)
   return await fetchRows<ISkillsLearnerRecord>(SQL_DELTA, [lastRunTimestamp.toISOString(), emailIds])
 }

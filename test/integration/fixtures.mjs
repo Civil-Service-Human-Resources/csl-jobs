@@ -1,18 +1,23 @@
-import { DockerComposeEnvironment, Wait } from 'testcontainers'
+import { GenericContainer } from 'testcontainers'
 import path from 'path'
 
-const composeFilePath = path.join(import.meta.dirname, '../../docker')
-const composeFile = 'docker-compose.yml'
+const dockerFilepath = path.join(import.meta.dirname, '../../docker')
 
-let composeEnv
+let azuriteContainer
+let ftpsContainer
 
 export async function mochaGlobalSetup () {
   try {
-    console.log('Attempting to build testcontainers')
-    composeEnv = await new DockerComposeEnvironment(composeFilePath, composeFile)
-      .withWaitStrategy('ftps_test_server', Wait.forLogMessage('passwd: password for testuser changed by root'))
-      .withStartupTimeout(20000)
-      .withNoRecreate().up()
+    console.log('Attempting to build Azurite container')
+    azuriteContainer = await new GenericContainer('mcr.microsoft.com/azure-storage/azurite')
+      .withExposedPorts({ container: 10000, host: 10000 }, { container: 10001, host: 10001 }, { container: 10002, host: 10002 }).start()
+
+    const ftpsDockerfile = `${dockerFilepath}/ftps`
+    console.log(`Attempting to build FTPS container from Dockerfile at ${ftpsDockerfile}`)
+    ftpsContainer = (await GenericContainer
+      .fromDockerfile(ftpsDockerfile).build())
+      .withExposedPorts({ container: 21, host: 21 })
+      .start()
   } catch (e) {
     console.error('Could not create testContainers')
     console.error(e)
@@ -21,8 +26,12 @@ export async function mochaGlobalSetup () {
 }
 
 export async function mochaGlobalTeardown () {
-  if (composeEnv !== undefined) {
-    console.log('Attempting to teardown testcontainers')
-    await composeEnv.down()
+  if (azuriteContainer !== undefined) {
+    console.log('Attempting to teardown azurite container')
+    await azuriteContainer.down()
+  }
+  if (ftpsContainer !== undefined) {
+    console.log('Attempting to teardown ftps container')
+    await ftpsContainer.down()
   }
 }

@@ -1,4 +1,4 @@
-FROM delfer/alpine-ftp-server
+FROM delfer/alpine-ftp-server:latest
 RUN apk add openssl
 
 WORKDIR /home/testuser
@@ -12,3 +12,5 @@ ENV USERS=testuser|password123|/home/testuser
 ENV ADDRESS=localhost
 ENV TLS_CERT=/etc/ssl/private/cert.pem
 ENV TLS_KEY=/etc/ssl/private/key.pem
+
+USER testuser

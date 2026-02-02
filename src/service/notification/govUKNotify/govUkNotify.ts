@@ -12,42 +12,39 @@ const { jobs: { courseCompletions, orgDomains, skillsCompletedLearnerRecords }, 
 const dateFormatTokens = 'DD/MM/YYYY'
 
 const notifications: GovUkEmailNotification[] = [
-  new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, courseCompletions.notifyTemplate, courseCompletions.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, courseCompletions.notifyPasswordTemplate, courseCompletions.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate, orgDomains.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate, orgDomains.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD, genericTemplates.fileDownload, skillsCompletedLearnerRecords.emailRecipients),
-  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword, skillsCompletedLearnerRecords.emailRecipients)
+  new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS, courseCompletions.notifyTemplate),
+  new GovUkEmailNotification(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, courseCompletions.notifyPasswordTemplate),
+  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate),
+  new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate),
+  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD, genericTemplates.fileDownload),
+  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword)
 ]
 
-const sendEmail = async (notificationType: GovUkNotification, personalisation: any, recipientOverride?: string[]): Promise<void> => {
+const sendEmail = async (notificationType: GovUkNotification, personalisation: any, recipients: string[]): Promise<void> => {
   const notifier = getNotifier()
   if (notifier !== undefined) {
     const notification = notifications.filter(n => n.notificationId === notificationType)[0]
-    if (recipientOverride !== undefined && recipientOverride.length > 0) {
-      notification.recipients = recipientOverride
-    }
-    await notifier.send(notification, personalisation)
+    await notifier.send(notification, personalisation, recipients)
   } else {
     log.warn(`Notification '${notificationType}' cannot be sent as the Govuk notifier has not been configured`)
   }
 }
 
-export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string, emailOverride?: string[]): Promise<void> => {
+export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string, recipients: string[]): Promise<void> => {
   const personalisation: MIReportPersonalisation = {
     description,
     linkExpiryInDays: uploadResult.expiryInDays,
     link: uploadResult.link
   }
-  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD, personalisation, emailOverride)
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD, personalisation, recipients)
 }
 
-export const sendSkillsFilePasswordNotification = async (password: string, description: string, emailOverride?: string[]): Promise<void> => {
+export const sendSkillsFilePasswordNotification = async (password: string, description: string, recipients: string[]): Promise<void> => {
   const personalisation: PasswordPersonalisation = {
     description,
     password
   }
-  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, personalisation, emailOverride)
+  await sendEmail(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, personalisation, recipients)
 }
 
 export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: Date, uploadResult: UploadResult): Promise<void> => {
@@ -58,7 +55,7 @@ export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: 
     linkExpiryInDays: uploadResult.expiryInDays,
     link: uploadResult.link
   }
-  await sendEmail(GovUkNotification.COURSE_COMPLETIONS, personalisation)
+  await sendEmail(GovUkNotification.COURSE_COMPLETIONS, personalisation, skillsCompletedLearnerRecords.emailRecipients)
 }
 
 export const sendCourseCompletionsPasswordNotification = async (fromDate: Date, toDate: Date, password: string): Promise<void> => {
@@ -68,7 +65,7 @@ export const sendCourseCompletionsPasswordNotification = async (fromDate: Date, 
     description: `Course completions from ${fromFmt} to ${toFmt}`,
     password
   }
-  await sendEmail(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, personalisation)
+  await sendEmail(GovUkNotification.COURSE_COMPLETIONS_PASSWORD, personalisation, courseCompletions.emailRecipients)
 }
 
 export const sendOrgDomainsNotification = async (description: string, dateCreated: Date, uploadResult: UploadResult): Promise<void> => {
@@ -80,7 +77,7 @@ export const sendOrgDomainsNotification = async (description: string, dateCreate
     daysUntilExpiry: uploadResult.expiryInDays
   }
 
-  await sendEmail(GovUkNotification.ORG_DOMAIN, personalisation)
+  await sendEmail(GovUkNotification.ORG_DOMAIN, personalisation, orgDomains.emailRecipients)
 }
 
 export const sendOrgDomainsPasswordNotification = async (description: string, password: string): Promise<void> => {
@@ -88,5 +85,5 @@ export const sendOrgDomainsPasswordNotification = async (description: string, pa
     description,
     password
   }
-  await sendEmail(GovUkNotification.ORG_DOMAIN_PASSWORD, personalisation)
+  await sendEmail(GovUkNotification.ORG_DOMAIN_PASSWORD, personalisation, orgDomains.emailRecipients)
 }

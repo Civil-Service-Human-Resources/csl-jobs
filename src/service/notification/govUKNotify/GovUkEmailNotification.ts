@@ -8,8 +8,8 @@ export enum GovUkNotification {
 }
 
 export class GovUkEmailNotification {
-  constructor (public readonly notificationId: GovUkNotification, public readonly templateId: string, public recipients: string[]) { }
+  constructor (public readonly notificationId: GovUkNotification, public readonly templateId: string) { }
   canSend (): boolean {
-    return (this.recipients.length > 0 && this.templateId.length > 0)
+    return (this.templateId.length > 0)
   }
 }

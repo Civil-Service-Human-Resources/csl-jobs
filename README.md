@@ -55,6 +55,4 @@ These tests require Docker to run, as they rely on two containers:
 - Azurite
 - FTPS server
 
-The `docker-compose` for these services can be found at `docker/docker-compose.yml`.
-
-`testcontainers` was tested with this setup in attempt to fully automate these tests, however it's not possible due to the port ranges on the FTPS server. Therefore, the itnegration tests **must be run manually and are NOT run via CI/CD**.
+`testcontainers` is used to automatically run both of these containers. They can be run for more thorough local testing with the Docker compose file at `docker/docker-compose.yml` 

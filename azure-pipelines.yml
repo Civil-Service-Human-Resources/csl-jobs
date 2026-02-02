@@ -25,6 +25,7 @@ stages:
           - task: Npm@1
             inputs:
               command: 'install'
+            displayName: 'Install dependencies'
           - task: Npm@1
             inputs:
               command: 'custom'
@@ -34,16 +35,18 @@ stages:
             inputs:
               command: 'custom'
               customCommand: 'run test'
+            displayName: 'Test'
           - task: PublishTestResults@2
             condition: succeededOrFailed()
             inputs:
               testRunner: JUnit
               testResultsFiles: '**/test-results.xml'
-            displayName: 'Test'
+            displayName: 'Publish test results'
           - task: PublishCodeCoverageResults@2
             inputs:
               codeCoverageTool: Cobertura
               summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+            displayName: 'Publish code coverage'
           - task: Npm@1
             inputs:
               command: 'custom'

@@ -14,7 +14,7 @@
     "mocha": "LOG_LEVEL=debug nyc ts-mocha --paths -p ./tsconfig.json --timeout 10000 --reporter mocha-junit-reporter --reporter spec --exit",
     "unit-test": "npm run mocha -- \"src/**/*.spec.ts\"",
     "integration-test": "DOT_ENV='../test/integration/integration-test.env' npm run mocha -- \"test/integration/**/*.spec.ts\" --require ./test/integration/fixtures.mjs",
-    "test": "npm run unit-test & npm run integration-test"
+    "test": "npm run unit-test && npm run integration-test"
   },
   "nyc": {
     "exclude": [

@@ -22,9 +22,14 @@ export class GovUkNotifier {
           log.debug(`Email ${notification.notificationId} sent successfully`)
         }))
       } catch (error) {
-        const req = error.response
-        log.error(`There were error(s) sending a '${notification.notificationId}' notify email:`)
-        const errors = req.data.errors as any[]
+        const errors: any[] = []
+        if (error.response !== undefined) {
+          const req = error.response
+          log.error(`There were error(s) sending a '${notification.notificationId}' notify email:`)
+          errors.push(...req.data.errors as any[])
+        } else {
+          errors.push(error)
+        }
         errors.forEach(e => { log.error(e) })
       }
     } else {

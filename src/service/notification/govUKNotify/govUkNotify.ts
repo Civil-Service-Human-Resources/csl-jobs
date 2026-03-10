@@ -17,7 +17,8 @@ const notifications: GovUkEmailNotification[] = [
   new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN, orgDomains.notifyTemplate),
   new GovUkEmailNotification(GovUkNotification.ORG_DOMAIN_PASSWORD, orgDomains.passwordNotifyTemplate),
   new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD, genericTemplates.fileDownload),
-  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword)
+  new GovUkEmailNotification(GovUkNotification.SKILLS_FILE_DOWNLOAD_PASSWORD, genericTemplates.fileDownloadPassword),
+  new GovUkEmailNotification(GovUkNotification.SKILLS_EMPTY_FILE, genericTemplates.emptyFileNotification)
 ]
 
 const sendEmail = async (notificationType: GovUkNotification, personalisation: any, recipients: string[]): Promise<void> => {
@@ -28,6 +29,10 @@ const sendEmail = async (notificationType: GovUkNotification, personalisation: a
   } else {
     log.warn(`Notification '${notificationType}' cannot be sent as the Govuk notifier has not been configured`)
   }
+}
+
+export const sendSkillsBlankFileNotification = async (recipients: string[]): Promise<void> => {
+  await sendEmail(GovUkNotification.SKILLS_EMPTY_FILE, {}, recipients)
 }
 
 export const sendSkillsFileNotification = async (uploadResult: UploadResult, description: string, recipients: string[]): Promise<void> => {

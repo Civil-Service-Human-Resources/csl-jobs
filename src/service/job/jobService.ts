@@ -32,9 +32,8 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       job = new SkillsCompletionsJob(notificationClient, config.jobs.skillsCompletedLearnerRecords.defaultFallbackPeriod, tableService)
       break
     case JobType.HMRC_SKILLS_COMPLETED_LEARNER_RECORDS: {
-      const ftpsService = createFtpsService(config.jobs.HMRCLearnerRecords.ftpsConfig)
       tableService = new JobTableService('HMRCSkillsSync')
-      job = new HMRCSkillsJob(notificationClient, config.jobs.HMRCLearnerRecords, ftpsService, tableService)
+      job = new HMRCSkillsJob(notificationClient, config.jobs.HMRCLearnerRecords, tableService)
       break
     }
     case JobType.REDUNDANT_TOKEN:

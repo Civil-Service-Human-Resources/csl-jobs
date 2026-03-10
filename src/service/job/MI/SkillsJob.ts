@@ -26,6 +26,7 @@ export interface SkillsJobConfig {
   defaultFallbackDuration: string
   sendBlankFile: boolean
   emailRecipients: string[]
+  emptyFileNotificationRecipients: string[]
 }
 
 interface SkillsCompletedLearnerRecordsFileDetails {
@@ -41,7 +42,7 @@ export interface EmailsToProcess {
 
 export abstract class SkillsJob extends TableDateRangeJob {
   constructor (notificationClient: NotificationClient, tableService: TableService, private readonly config: SkillsJobConfig,
-    protected readonly ftpService: FtpService) {
+    protected readonly ftpService?: FtpService) {
     super(notificationClient, tableService, config.defaultFallbackDuration)
   }
 
@@ -103,10 +104,17 @@ export abstract class SkillsJob extends TableDateRangeJob {
     log.info(`Processing file ${dataFileName}`)
     const dataFile = JobsFile.from(`${dataFileName}`, fileContents)
     await uploadFile(dataFile)
-    const uploadResult = await this.ftpService.uploadFileFromDatafile(dataFile, this.config.file.remoteDir)
-    const uploadResultText = uploadResult
-      ? `Skills completion learner record data file '${dataFile.filename}' successfully uploaded to file server.`
-      : `Skills completion learner record data file '${dataFile.filename}' upload FAILED.`
+    let uploadResultText = `Skills completion learner record data file '${dataFile.filename}' was not uploaded as there was not an ftpService configured`
+    let uploadResult: boolean | undefined
+    if (this.ftpService !== undefined) {
+      uploadResult = await this.ftpService.uploadFileFromDatafile(dataFile, this.config.file.remoteDir)
+      uploadResultText = uploadResult
+        ? `Skills completion learner record data file '${dataFile.filename}' successfully uploaded to file server.`
+        : `Skills completion learner record data file '${dataFile.filename}' upload FAILED.`
+    } else {
+      uploadResultText = `Skills completion learner record data file '${dataFile.filename}' was not uploaded because no file server was defined.`
+      uploadResult = true
+    }
     const sentEmails = await this.sendEmails(dataFile)
     const emailResultText = sentEmails
       ? ' Zip file successfully sent via email.'
@@ -120,6 +128,7 @@ export abstract class SkillsJob extends TableDateRangeJob {
   }
 
   protected async runJob (): Promise<JobResult> {
+    let totalRecordCount = 0
     const dates = await this.getFromAndToDatesWithFallback()
     const resultText: string[] = []
     const emails = await this.getEmails()
@@ -130,6 +139,7 @@ export abstract class SkillsJob extends TableDateRangeJob {
       log.info(`Fetched previous run details: ${file.date} ${file.operation} ${file.sequenceNumber}`)
       const records = await getNewSkillsCompletedLearnerRecords(emails.newEmails)
       log.info(`Fetched ${records.length} records`)
+      totalRecordCount += records.length
       if (records.length === 0 && !this.config.sendBlankFile) {
         await this.notificationClient.infoNotification('Data not found. Blank skills completion learner record data file is not allowed to send, therefore it is not generated.')
       } else {
@@ -138,7 +148,7 @@ export abstract class SkillsJob extends TableDateRangeJob {
         const result = await this.processFile(fileContents, this.config.file.filenamePrefixCreate, file)
         if (result) {
           log.info(`New user data extract completed successfully. Adding ${emails.newEmails.length} new users to ${emails.existingEmails.length} existing users`)
-          const allEmails = [...emails.existingEmails, ...emails.newEmails]
+          const allEmails = [...new Set([...emails.existingEmails, ...emails.newEmails])]
           await this.tableService.deleteValueInTable('newEmailIds')
           await this.tableService.upsertValueInTable('emailIds', allEmails.join(','))
           resultText.push(`Processed ${emails.newEmails.length} new emails`)
@@ -153,6 +163,7 @@ export abstract class SkillsJob extends TableDateRangeJob {
     if (emails.existingEmails.length > 0) {
       const file = await this.getSkillsFile(dates.toDate)
       const records = await getDeltaSkillsCompletedLearnerRecords(emails.existingEmails, dates.fromDate)
+      totalRecordCount += records.length
       if (records.length === 0 && !this.config.sendBlankFile) {
         await this.notificationClient.infoNotification('Data not found. Blank skills completion learner record data file is not allowed to send, therefore it is not generated.')
       } else {
@@ -168,6 +179,10 @@ export abstract class SkillsJob extends TableDateRangeJob {
       }
     } else {
       await this.notificationClient.infoNotification('No existing emails to process')
+    }
+    if (totalRecordCount === 0 && this.config.emptyFileNotificationRecipients.length > 0) {
+      await govNotifyClient.sendSkillsBlankFileNotification(this.config.emptyFileNotificationRecipients)
+      resultText.push(`Alerted ${this.config.emptyFileNotificationRecipients.length} emails about an empty file`)
     }
     return {
       text: resultText.join(', ')

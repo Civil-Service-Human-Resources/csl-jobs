@@ -48,27 +48,22 @@ const config = {
       defaultFallbackDuration: env.HMRC_LR_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.HMRC_LR_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       file: {
-        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'ER_Create',
-        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'LR_Create',
+        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'LR_Update',
         extension: env.HMRC_LR_DATA_FILENAME_EXTENSION ?? 'csv',
         fileDelimiter: env.HMRC_LR_DATA_FILE_DELIMITER ?? ',',
         remoteDir: env.HMRC_LR_DATA_FILE_REMOTE_DIR ?? '/home/testuser'
       },
-      sendBlankFile: JSON.parse(env.HMRC_LR_SEND_BLANK_DATA_FILE ?? 'true') as boolean,
-      emailRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_RECIPIENTS),
-      ftpsConfig: {
-        host: env.HMRC_LR_SYNC_FTPS_HOST ?? 'localhost',
-        user: env.HMRC_LR_SYNC_FTPS_USER ?? 'testuser',
-        port: parseInt(env.HMRC_LR_SYNC_FTPS_PORT ?? '21'),
-        password: env.HMRC_LR_SYNC_FTPS_PASSWORD ?? 'password123'
-      }
+      sendBlankFile: JSON.parse(env.HMRC_LR_SEND_BLANK_DATA_FILE ?? 'false') as boolean,
+      emptyFileNotificationRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_EMPTY_FILE_RECIPIENTS),
+      emailRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_RECIPIENTS)
     },
     skillsCompletedLearnerRecords: {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      dataFilenamePrefixCreate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_CREATE ?? 'ER_Create',
-      dataFilenamePrefixUpdate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+      dataFilenamePrefixCreate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_CREATE ?? 'LR_Create',
+      dataFilenamePrefixUpdate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_UPDATE ?? 'LR_Update',
       dataFilenameExtension: env.SKILLS_SYNC_DATA_FILENAME_EXTENSION ?? 'csv',
       dataFileDelimiter: env.SKILLS_SYNC_DATA_FILE_DELIMITER ?? ',',
       sendBlankDataFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_DATA_FILE ?? 'true') as boolean,
@@ -99,7 +94,8 @@ const config = {
       apiKey: env.GOVUK_NOTIFY_API_KEY,
       genericTemplates: {
         fileDownloadPassword: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD_PASSWORD ?? '',
-        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? ''
+        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? '',
+        emptyFileNotification: env.GOVUK_NOTIFY_TEMPLATE_EMPTY_FILE ?? ''
       }
     }
   },

@@ -25,6 +25,10 @@ export const createSkillsExtractPasswordEmailStub = (recipient: string, expBody:
   return createSendEmailStub(recipient, 'fileDownloadPassword', expBody)
 }
 
+export const createSkillsEmptyFileNotification = (recipient: string): Scope => {
+  return createSendEmailStub(recipient, 'emptyFile', {})
+}
+
 export const createSkillsExtractEmailStub = (recipient: string, expBody: SkillsExtractBody): Scope => {
   if (!(expBody.link instanceof RegExp)) {
     expBody.link = new RegExp(`^${expBody.link}`)

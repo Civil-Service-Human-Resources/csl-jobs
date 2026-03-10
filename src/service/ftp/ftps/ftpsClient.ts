@@ -25,7 +25,10 @@ export class FtpsClientFactory implements FtpsClientFactory {
       if (config.logLevel === 'debug') {
         client.ftp.verbose = true
       }
-      this.config.secureOptions = { rejectUnauthorized: this.config.host !== 'localhost' }
+      this.config.secureOptions = {
+        rejectUnauthorized: this.config.host !== 'localhost',
+        minVersion: 'TLSv1.2'
+      }
       await client.access({
         ...this.config,
         secure: true

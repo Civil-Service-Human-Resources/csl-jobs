@@ -4,8 +4,7 @@ import { type FtpService } from '../../ftp/ftpService'
 import { type TableService } from '../../azure/storage/table/service'
 
 export class HMRCSkillsJob extends SkillsJob {
-  constructor (notificationClient: NotificationClient, config: SkillsJobConfig, ftpService: FtpService,
-    tableService: TableService) {
+  constructor (notificationClient: NotificationClient, config: SkillsJobConfig, tableService: TableService, ftpService?: FtpService) {
     super(notificationClient, tableService, config, ftpService)
   }
 

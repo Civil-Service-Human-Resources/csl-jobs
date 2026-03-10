@@ -10,7 +10,6 @@ import { ClearDuplicateTokensJob } from './identity/ClearDuplicateTokensJob'
 import { OrgDomainsJob } from './orgDomains/orgDomainsJob'
 import { OBTStatsJob } from './MI/OBTStats'
 import { HMRCSkillsJob } from './MI/HMRCSkillsJob'
-import { createFtpsService } from '../ftp/builder'
 import { type TableService } from '../azure/storage/table/service'
 import { JobTableService } from '../azure/storage/table/jobTableService'
 

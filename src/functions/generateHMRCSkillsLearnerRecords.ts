@@ -9,7 +9,7 @@ export async function generateHMRCSkillsLearnerRecords (
   myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
-  await runJob(JobType.SKILLS_COMPLETED_LEARNER_RECORDS)
+  await runJob(JobType.HMRC_SKILLS_COMPLETED_LEARNER_RECORDS)
 }
 
 app.timer('generateHMRCSkillsLearnerRecords', {

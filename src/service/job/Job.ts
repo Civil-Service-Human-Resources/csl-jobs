@@ -15,7 +15,8 @@ export abstract class Job {
       return res
     } catch (e) {
       const errorMsg = e as string
-      log.error(`Exception running job ${jobName}: ${errorMsg}`)
+      log.error(`Exception running job ${jobName}: ${errorMsg}.`)
+      log.error(e)
       await this.notificationClient.errorNotification(`Job '${jobName}' FAILED.`)
       throw e
     }

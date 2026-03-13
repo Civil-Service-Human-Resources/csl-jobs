@@ -60,6 +60,10 @@ const getNotifiers = (): Notifier[] => {
 }
 
 export const getNotificationClient = (jobName: string): NotificationClient => {
+  if (!Object.values(NOTIFICATION_LEVEL).includes(notificationLevel.valueOf())) {
+    const validLevels = Object.keys(NOTIFICATION_LEVEL).join(', ')
+    throw new Error(`Notification level ${notificationLevel} is invalid. Pick from ${validLevels}`)
+  }
   const notifiers = getNotifiers()
   return new NotificationClient(notifiers, notificationLevel, siteName, jobName)
 }

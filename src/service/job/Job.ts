@@ -8,8 +8,8 @@ export abstract class Job {
 
   public execute = async (): Promise<JobResult> => {
     const jobName = this.getName()
-    await this.notificationClient.infoNotification(`Starting job '${jobName}'`)
     try {
+      await this.notificationClient.infoNotification(`Starting job '${jobName}'`)
       const res = await this.runJob()
       await this.notificationClient.infoNotification(`Job '${jobName}' ran successfully with result message '${res.text}'`)
       return res

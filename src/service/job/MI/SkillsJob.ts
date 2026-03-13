@@ -91,9 +91,9 @@ export abstract class SkillsJob extends TableDateRangeJob {
       const uploadResult = await uploadFile(zipFile.result)
       log.info(`Skills zip file '${zipFile.result.filename}' is created and uploaded to Azure blob storage`)
       const description = `Skills learner record extract: ${dataFile.filename}`
-      await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description, this.config.emailRecipients),
-        govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description, this.config.emailRecipients)])
-      return true
+      const emailsSent = (await Promise.all([govNotifyClient.sendSkillsFileNotification(uploadResult, description, this.config.emailRecipients),
+        govNotifyClient.sendSkillsFilePasswordNotification(zipFile.password, description, this.config.emailRecipients)])).reduce((a, b) => a + b, 0)
+      return emailsSent > 0
     } else {
       return false
     }
@@ -104,7 +104,7 @@ export abstract class SkillsJob extends TableDateRangeJob {
     log.info(`Processing file ${dataFileName}`)
     const dataFile = JobsFile.from(`${dataFileName}`, fileContents)
     await uploadFile(dataFile)
-    let uploadResultText = `Skills completion learner record data file '${dataFile.filename}' was not uploaded as there was not an ftpService configured`
+    let uploadResultText: string
     let uploadResult: boolean | undefined
     if (this.ftpService !== undefined) {
       uploadResult = await this.ftpService.uploadFileFromDatafile(dataFile, this.config.file.remoteDir)

@@ -8,7 +8,8 @@ const { notifications: { govNotify } } = config
 export class GovUkNotifier {
   constructor (private readonly client: govUkNotify.NotifyClient) {}
 
-  async send (notification: GovUkEmailNotification, personalisation: any, recipients: string[]): Promise<void> {
+  async send (notification: GovUkEmailNotification, personalisation: any, recipients: string[]): Promise<number> {
+    let emailsSent = 0
     if (notification.canSend()) {
       log.debug(`Attempting to send email '${notification.notificationId}' with personalisation:`)
       log.debug(personalisation)
@@ -19,6 +20,7 @@ export class GovUkNotifier {
           await this.client.sendEmail(notification.templateId, r, {
             personalisation
           })
+          emailsSent++
           log.debug(`Email ${notification.notificationId} sent successfully`)
         }))
       } catch (error) {
@@ -35,6 +37,7 @@ export class GovUkNotifier {
     } else {
       log.warn(`Notification '${notification.notificationId}' cannot be sent as it is missing configuration parameters`)
     }
+    return emailsSent
   }
 }
 

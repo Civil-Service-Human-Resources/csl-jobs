@@ -1,11 +1,15 @@
-import { Job } from '../Job'
 import { type CustomDate } from '../../date/CustomDate'
 
-export interface DateRange {
+export interface DateRange extends PartialDateRange {
   fromDate: CustomDate
+}
+
+export interface PartialDateRange {
+  fromDate?: CustomDate
   toDate: CustomDate
 }
 
-export abstract class DateRangeJob extends Job {
-  abstract getFromAndToDates (): Promise<DateRange>
+export interface DateRangeJob {
+  getFromAndToDates: () => Promise<PartialDateRange>
+  getFromAndToDatesWithFallback: () => Promise<DateRange>
 }

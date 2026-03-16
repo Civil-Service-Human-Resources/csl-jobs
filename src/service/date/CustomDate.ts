@@ -1,4 +1,5 @@
 import { parse, toSeconds } from 'iso8601-duration'
+import dayjs from 'dayjs'
 
 export class CustomDate extends Date {
   public addDuration (isoDuration: string): void {
@@ -13,5 +14,9 @@ export class CustomDate extends Date {
 
   public fixOffset (): void {
     this.setHours(this.getHours() + Math.abs(this.getTimezoneOffset() / 60))
+  }
+
+  public format (template: string): string {
+    return dayjs(this).format(template)
   }
 }

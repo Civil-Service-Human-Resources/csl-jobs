@@ -20,11 +20,12 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '18'
-            displayName: 'Install Node 18'
+              versionSpec: '20'
+            displayName: 'Install Node 20'
           - task: Npm@1
             inputs:
               command: 'install'
+            displayName: 'Install dependencies'
           - task: Npm@1
             inputs:
               command: 'custom'
@@ -34,16 +35,18 @@ stages:
             inputs:
               command: 'custom'
               customCommand: 'run test'
+            displayName: 'Test'
           - task: PublishTestResults@2
             condition: succeededOrFailed()
             inputs:
               testRunner: JUnit
               testResultsFiles: '**/test-results.xml'
-            displayName: 'Test'
-          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish test results'
+          - task: PublishCodeCoverageResults@2
             inputs:
               codeCoverageTool: Cobertura
               summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+            displayName: 'Publish code coverage'
           - task: Npm@1
             inputs:
               command: 'custom'

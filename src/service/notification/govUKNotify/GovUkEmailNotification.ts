@@ -4,12 +4,13 @@ export enum GovUkNotification {
   ORG_DOMAIN = 'ORG_DOMAIN',
   ORG_DOMAIN_PASSWORD = 'ORG_DOMAIN_PASSWORD',
   SKILLS_FILE_DOWNLOAD = 'FILE_DOWNLOAD',
-  SKILLS_FILE_DOWNLOAD_PASSWORD = 'FILE_DOWNLOAD_PASSWORD'
+  SKILLS_FILE_DOWNLOAD_PASSWORD = 'FILE_DOWNLOAD_PASSWORD',
+  SKILLS_EMPTY_FILE = 'SKILLS_EMPTY_FILE',
 }
 
 export class GovUkEmailNotification {
-  constructor (public readonly notificationId: GovUkNotification, public readonly templateId: string, public readonly recipients: string[]) { }
+  constructor (public readonly notificationId: GovUkNotification, public readonly templateId: string) { }
   canSend (): boolean {
-    return (this.recipients.length > 0 && this.templateId.length > 0)
+    return (this.templateId.length > 0)
   }
 }

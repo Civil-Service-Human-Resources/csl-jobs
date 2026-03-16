@@ -48,8 +48,8 @@ const config = {
       defaultFallbackDuration: env.HMRC_LR_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.HMRC_LR_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
       file: {
-        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'LR_Create',
-        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'LR_Update',
+        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'HMRC_LR_Create',
+        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'HMRC_LR_Update',
         extension: env.HMRC_LR_DATA_FILENAME_EXTENSION ?? 'csv',
         fileDelimiter: env.HMRC_LR_DATA_FILE_DELIMITER ?? ',',
         remoteDir: env.HMRC_LR_DATA_FILE_REMOTE_DIR ?? '/home/testuser'

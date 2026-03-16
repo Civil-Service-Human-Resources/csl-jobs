@@ -139,18 +139,18 @@ describe('HMRCSkillsJob', () => {
     expect(await tableService.getValueFromTable('lastFileOperation')).to.eq('update')
     expect(await tableService.getValueFromTable('lastFileDate')).to.eq('01012023')
     expect(await tableService.getValueFromTable('lastFileSequenceNumber')).to.eq('2')
-    expect(testNotifier.notifications[1]).to.eq('integration-test | HMRCSkillsJob | Skills completion learner record data file \'LR_Create_01012023_1.csv\' was not uploaded because no file server was defined. Data zip file not sent via email because no email recipients are defined.')
+    expect(testNotifier.notifications[1]).to.eq('integration-test | HMRCSkillsJob | Skills completion learner record data file \'HMRC_LR_Create_01012023_1.csv\' was not uploaded because no file server was defined. Data zip file not sent via email because no email recipients are defined.')
     expect(testNotifier.notifications[testNotifier.notifications.length - 1]).to.eq('integration-test | HMRCSkillsJob | Job \'HMRC skills campus extract job\' ran successfully with result message \'Processed 2 new emails, Processed 2 existing emails\'')
   })
 
   it('should zip reports and send emails when recipients are specified', async () => {
     const emailStubs = [createSkillsExtractPasswordEmailStub('testEmail1@gov.uk', {
-      description: 'Skills learner record extract: LR_Create_01012023_1.csv',
+      description: 'Skills learner record extract: HMRC_LR_Create_01012023_1.csv',
       password: 'Password'
     }), createSkillsExtractEmailStub('testEmail1@gov.uk', {
-      description: 'Skills learner record extract: LR_Create_01012023_1.csv',
+      description: 'Skills learner record extract: HMRC_LR_Create_01012023_1.csv',
       linkExpiryInDays: 7,
-      link: 'http://127.0.0.1:10000/devstoreaccount1/mi-storage/LR_Create_01012023_1.csv.zip'
+      link: 'http://127.0.0.1:10000/devstoreaccount1/mi-storage/HMRC_LR_Create_01012023_1.csv.zip'
     })]
     HMRCLearnerRecords.emailRecipients = ['testEmail1@gov.uk']
     const job = new HMRCSkillsJob(notificationClient, HMRCLearnerRecords, tableService)

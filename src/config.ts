@@ -4,13 +4,19 @@ import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 import { getArrayFromCsvEnvVar } from './util/utils'
 
-dotenv.config({
-  path: path.join(__dirname, '/.env')
-})
-logNode()
 const env = process.env
 
+const dotEnvPath = env.DOT_ENV ?? './.env'
+
+const dotenvFilePath = path.join(__dirname, dotEnvPath)
+console.log(`DOT_ENV env var detected; loading env from .env file "${dotenvFilePath}"`)
+dotenv.config({
+  path: dotenvFilePath
+})
+logNode()
+
 const config = {
+  logLevel: (env.LOG_LEVEL ?? 'debug').toLowerCase(),
   database: {
     server: env.DATABASE_SERVER ?? 'localhost',
     username: env.DATABASE_USER ?? 'root',
@@ -37,12 +43,27 @@ const config = {
       emailRecipients: (env.NOTIFY_COURSE_COMPLETION_RECIPIENTS ?? '').split(','),
       runOnStartup: JSON.parse(env.COURSE_COMPLETIONS_RUN_ON_STARTUP ?? 'false') as boolean
     },
+    HMRCLearnerRecords: {
+      cron: env.HMRC_LR_CRON ?? '0 2 0 * * *',
+      defaultFallbackDuration: env.HMRC_LR_SYNC_FALLBACK_DURATION ?? 'P1D',
+      runOnStartup: JSON.parse(env.HMRC_LR_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
+      file: {
+        filenamePrefixCreate: env.HMRC_LR_DATA_FILENAME_PREFIX_CREATE ?? 'HMRC_LR_Create',
+        filenamePrefixUpdate: env.HMRC_LR_DATA_FILENAME_PREFIX_UPDATE ?? 'HMRC_LR_Update',
+        extension: env.HMRC_LR_DATA_FILENAME_EXTENSION ?? 'csv',
+        fileDelimiter: env.HMRC_LR_DATA_FILE_DELIMITER ?? ',',
+        remoteDir: env.HMRC_LR_DATA_FILE_REMOTE_DIR ?? '/home/testuser'
+      },
+      sendBlankFile: JSON.parse(env.HMRC_LR_SEND_BLANK_DATA_FILE ?? 'false') as boolean,
+      emptyFileNotificationRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_EMPTY_FILE_RECIPIENTS),
+      emailRecipients: getArrayFromCsvEnvVar(env.HMRC_LR_RECIPIENTS)
+    },
     skillsCompletedLearnerRecords: {
       cron: env.SKILLS_SYNC_CRON ?? '0 2 0 * * *',
       defaultFallbackPeriod: env.SKILLS_SYNC_FALLBACK_DURATION ?? 'P1D',
       runOnStartup: JSON.parse(env.SKILLS_SYNC_RUN_ON_STARTUP ?? 'false') as boolean,
-      dataFilenamePrefixCreate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_CREATE ?? 'ER_Create',
-      dataFilenamePrefixUpdate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_UPDATE ?? 'ER_Update',
+      dataFilenamePrefixCreate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_CREATE ?? 'LR_Create',
+      dataFilenamePrefixUpdate: env.SKILLS_SYNC_DATA_FILENAME_PREFIX_UPDATE ?? 'LR_Update',
       dataFilenameExtension: env.SKILLS_SYNC_DATA_FILENAME_EXTENSION ?? 'csv',
       dataFileDelimiter: env.SKILLS_SYNC_DATA_FILE_DELIMITER ?? ',',
       sendBlankDataFile: JSON.parse(env.SKILLS_SYNC_SEND_BLANK_DATA_FILE ?? 'true') as boolean,
@@ -73,7 +94,8 @@ const config = {
       apiKey: env.GOVUK_NOTIFY_API_KEY,
       genericTemplates: {
         fileDownloadPassword: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD_PASSWORD ?? '',
-        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? ''
+        fileDownload: env.GOVUK_NOTIFY_TEMPLATE_FILE_DOWNLOAD ?? '',
+        emptyFileNotification: env.GOVUK_NOTIFY_TEMPLATE_EMPTY_FILE ?? ''
       }
     }
   },

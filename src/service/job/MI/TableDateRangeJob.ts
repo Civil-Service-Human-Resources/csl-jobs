@@ -1,23 +1,33 @@
-import { type DateRange, DateRangeJob } from './DateRangeJob'
+import { type DateRange, type DateRangeJob, type PartialDateRange } from './DateRangeJob'
 import * as dateService from '../../date/service'
 import log from 'log'
-import * as tableService from '../../azure/storage/table/service'
 import { type NotificationClient } from '../../notification/notifications'
+import { TableJob } from '../Job'
+import { type JobTableService } from '../../azure/storage/table/jobTableService'
 
-export abstract class TableDateRangeJob extends DateRangeJob {
+export abstract class TableDateRangeJob extends TableJob implements DateRangeJob {
   constructor (notificationClient: NotificationClient,
-    protected tablePartitionKey: string, protected readonly defaultFallbackDuration: string) {
-    super(notificationClient)
+    tableService: JobTableService, protected readonly defaultFallbackDuration: string) {
+    super(notificationClient, tableService)
   }
 
-  getFromAndToDates = async (): Promise<DateRange> => {
-    const toTimestamp = dateService.getMidnightToday()
-    log.info('Getting last run timestamp from table service')
-    let lastSuccessTimestamp = await tableService.getDateFromTable(this.tablePartitionKey, 'lastReportTimestamp')
+  getFromAndToDatesWithFallback = async (): Promise<DateRange> => {
+    const dateRange = await this.getFromAndToDates()
+    let lastSuccessTimestamp = dateRange.fromDate
     if (lastSuccessTimestamp === undefined) {
       log.info(`Last run timestamp does not exist - calculating from fallback duration '${this.defaultFallbackDuration}'`)
-      lastSuccessTimestamp = dateService.getNewDateFromDateWithDuration(toTimestamp, this.defaultFallbackDuration, 'subtract')
+      lastSuccessTimestamp = dateService.getNewDateFromDateWithDuration(dateRange.toDate, this.defaultFallbackDuration, 'subtract')
     }
+    return {
+      fromDate: lastSuccessTimestamp,
+      toDate: dateRange.toDate
+    }
+  }
+
+  getFromAndToDates = async (): Promise<PartialDateRange> => {
+    const toTimestamp = dateService.getMidnightToday()
+    log.info('Getting last run timestamp from table service')
+    const lastSuccessTimestamp = await this.tableService.getDateFromTable('lastReportTimestamp')
     return {
       fromDate: lastSuccessTimestamp,
       toDate: toTimestamp

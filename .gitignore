@@ -102,3 +102,6 @@ __azurite_db*__.json
 
 # IntelliJ artifacts
 .idea/
+
+# Docker
+docker/ftps/data/

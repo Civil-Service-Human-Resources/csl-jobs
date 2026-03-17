@@ -8,10 +8,11 @@ import { JobsFile } from '../file/models'
 import { generateCourseCompletionsReportZip, generateOBTStatsAndUploadToS3, generateSkillsCompletedLearnerRecordsAndUploadToSftp } from './reportService'
 import { expect } from 'chai'
 import * as learnerRecordService from '../learnerRecord/service'
-import * as tableService from '../azure/storage/table/service'
 import * as govNotifyClient from '../notification/govUKNotify/govUkNotify'
 import * as fileService from '../file/fileService'
 import * as uploadToSftp from '../sftp/service'
+import { type TableService } from '../azure/storage/table/service'
+import { JobTableService } from '../azure/storage/table/jobTableService'
 
 const fakeCourseCompletionRow = {
   user_id: 'user_id',
@@ -105,13 +106,14 @@ describe('Report service tests', () => {
     const stubs: any = {}
     const notificationClient: any = {}
     notificationClient.infoNotification = sandbox.stub()
+    const tableService: TableService = new JobTableService('skillSync')
     before(() => {
-      const stubGetJobData = sandbox.stub(tableService, 'getJobData')
-      stubGetJobData.withArgs('skillsSync', 'lastFileOperation').resolves('Create')
-      stubGetJobData.withArgs('skillsSync', 'lastFileDate').resolves('2025-01-01')
-      stubGetJobData.withArgs('skillsSync', 'lastFileSequenceNumber').resolves('')
-      stubGetJobData.withArgs('skillsSync', 'emailIds').resolves(emailIds)
-      stubGetJobData.withArgs('skillsSync', 'sshPrivateKey').resolves('some-value')
+      const stubGetJobData = sandbox.stub(tableService, 'getValueFromTable')
+      stubGetJobData.withArgs('lastFileOperation').resolves('Create')
+      stubGetJobData.withArgs('lastFileDate').resolves('2025-01-01')
+      stubGetJobData.withArgs('lastFileSequenceNumber').resolves('')
+      stubGetJobData.withArgs('emailIds').resolves(emailIds)
+      stubGetJobData.withArgs('sshPrivateKey').resolves('some-value')
       stubs.getDateFromTable = sandbox.stub(tableService, 'getDateFromTable')
       stubs.getSkillsCompletedLearnerRecords = sandbox.stub(database, 'getSkillsCompletedLearnerRecords').resolves([fakeSkillsLearnerRecord as any])
       stubs.objsToDelimited = sandbox.stub(delimited, 'objsToDelimited').resolves(fakeCsv)
@@ -122,14 +124,15 @@ describe('Report service tests', () => {
       stubs.zipFiles = sandbox.stub(zip, 'zipFiles').resolves(fakeZipResult)
       stubs.sendSkillsFileNotification = sandbox.stub(govNotifyClient, 'sendSkillsFileNotification')
       stubs.sendSkillsFilePasswordNotification = sandbox.stub(govNotifyClient, 'sendSkillsFilePasswordNotification')
-      stubs.upsertJobData = sandbox.stub(tableService, 'upsertJobData')
+      stubs.upsertJobData = sandbox.stub(tableService, 'upsertValueInTable')
     })
     after(() => {
       sandbox.restore()
     })
     it('Should run successfully', async () => {
-      const res = await generateSkillsCompletedLearnerRecordsAndUploadToSftp('skillsSync')
-      expect(res).to.contain('Skills completion learner record data file \'ER_Create_')
+      const res = await generateSkillsCompletedLearnerRecordsAndUploadToSftp(tableService)
+      console.log(res)
+      expect(res).to.contain('Skills completion learner record data file \'LR_Create_')
       expect(res).to.contain('1.csv\' successfully uploaded to sftp server.')
       expect(res).to.contain(' Data zip file not sent via email because no email recipients are defined.')
       sandbox.assert.calledWith(stubs.getSkillsCompletedLearnerRecords, ['abc1@xyz.com', 'abc2@xyz.com'], undefined)

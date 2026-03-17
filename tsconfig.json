@@ -9,5 +9,5 @@
     "strict": false,
 	"strictNullChecks": true
   },
-  "include": ["src/**/*.*"]
+  "include": ["src/**/*.*", "test/**/*.*"]
 }

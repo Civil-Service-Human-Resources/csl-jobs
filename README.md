@@ -38,3 +38,23 @@ Use the npm run debug-local command along with the name of the Function you’d 
 `npm run debug-local -- --functionName clearDuplicateTokens`
 
 This command will invoke the ts-node package to directly run the start.ts typescript file.
+
+## Tests
+
+### Unit tests
+
+Unit tests can be run with the usual command `npm run test`
+
+### Integration tests
+
+The integration tests can be found in `test/integration` and run with `npm run integration-test`. 
+
+A custom .env file is loaded in, this can be found at `test/integration/integration-test.env`
+
+These tests require Docker to run, as they rely on two containers:
+- Azurite
+- FTPS server
+
+`testcontainers` is used to automatically run both of these containers.
+
+They can be run for more thorough local testing with the Docker compose file at `docker/docker-compose.yml` in conjunction with `npm run integration-test-no-testcontainers`. Azure Storage Explorer and local volumes can then be used to further validate test outcomes. 

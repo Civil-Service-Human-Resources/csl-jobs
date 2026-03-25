@@ -8,7 +8,7 @@ import dayjs from 'dayjs'
 import type { OrgDomainsEmailPersonalisation } from '../../orgDomains/model/emailPersonalisation'
 import type { PasswordEmailPersonalisation } from '../../orgDomains/model/PasswordEmailPersonalisation'
 
-const { jobs: { courseCompletions, orgDomains, skillsCompletedLearnerRecords }, notifications: { govNotify: { genericTemplates } } } = config
+const { jobs: { courseCompletions, orgDomains }, notifications: { govNotify: { genericTemplates } } } = config
 const dateFormatTokens = 'DD/MM/YYYY'
 
 const notifications: GovUkEmailNotification[] = [
@@ -62,7 +62,7 @@ export const sendCourseCompletionsNotification = async (fromDate: Date, toDate: 
     linkExpiryInDays: uploadResult.expiryInDays,
     link: uploadResult.link
   }
-  return await sendEmail(GovUkNotification.COURSE_COMPLETIONS, personalisation, skillsCompletedLearnerRecords.emailRecipients)
+  return await sendEmail(GovUkNotification.COURSE_COMPLETIONS, personalisation, courseCompletions.emailRecipients)
 }
 
 export const sendCourseCompletionsPasswordNotification = async (fromDate: Date, toDate: Date, password: string): Promise<number> => {

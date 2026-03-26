@@ -41,6 +41,7 @@ export interface ISkillsLearnerRecord extends RowDataPacket {
   type: string
   emailAddress: string
   cei: string
+  provider: string
   contentId: string
   progress: string
   isCompleted: string

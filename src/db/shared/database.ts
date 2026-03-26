@@ -63,6 +63,7 @@ const getSkillsCompletedLearnerRecordsSQL = (): string => {
     'Create' as type,
     i.email as emailAddress,
     '' as cei,
+    'Civil Service Learning' as provider,
     lr.resource_id as contentId,
     case
         when min(lre.event_timestamp) is not null then 100
@@ -90,6 +91,7 @@ const getSkillsDeltaCompletedLearnerRecordsSQL = (): string => {
     'Create' as type,
     i.email as emailAddress,
     '' as cei,
+    'Civil Service Learning' as provider,
     lr.resource_id as contentId,
     case
         when min(lre.event_timestamp) is not null then 100

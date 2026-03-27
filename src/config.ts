@@ -23,7 +23,10 @@ const config = {
     password: env.DATABASE_PASSWORD ?? 'my-secret-pw',
     enableDebugLogs: JSON.parse(env.DATABASE_ENABLE_DEBUG ?? 'false') as boolean,
     useSSL: JSON.parse(env.DATABASE_USE_SSL ?? 'true') as boolean,
-    sslCertificate: env.SSL_CERT ?? path.join(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem')
+    sslCertificate: env.SSL_CERT ?? path.join(__dirname, 'resources', 'DigiCertGlobalRootG2.crt.pem'),
+    skills: {
+      provider: env.SKILLS_PROVIDER ?? 'Civil Service Learning'
+    }
   },
   jobs: {
     redundantTokens: {

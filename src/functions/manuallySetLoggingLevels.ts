@@ -9,7 +9,7 @@ import log from 'log'
 import config from '../config'
 import { DefaultAzureCredential } from '@azure/identity'
 
-export async function manuallyResetLoggingLevels (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function manuallySetLoggingLevels (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const notificationClient = getNotificationClient(JobType.RESET_LOGGING_LEVELS.valueOf())
   const azureCredential = new DefaultAzureCredential()
   const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
@@ -50,5 +50,5 @@ export async function manuallyResetLoggingLevels (request: HttpRequest, context:
 app.http('manuallySetLoggingLevels', {
   methods: ['POST'],
   authLevel: 'function',
-  handler: manuallyResetLoggingLevels
+  handler: manuallySetLoggingLevels
 })

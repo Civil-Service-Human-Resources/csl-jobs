@@ -2,21 +2,21 @@ import { app, type HttpRequest, type HttpResponseInit, type InvocationContext } 
 import { JobType } from '../service/job/JobType'
 import { getNotificationClient } from '../service/notification/notifications'
 import { AzureClientService } from '../service/azure/infrastructure/azureClientService'
-import { ResetTestEnvLoggingLevelsJobArgs } from '../service/job/infrastructure/resetTestEnvLoggingLevelsJobArgs'
-import { ResetTestEnvLoggingLevelsJob } from '../service/job/infrastructure/resetTestEnvLoggingLevelsJob'
+import { SetTestEnvLoggingLevelsJobArgs } from '../service/job/infrastructure/setTestEnvLoggingLevelsJobArgs'
+import { SetTestEnvLoggingLevelsJob } from '../service/job/infrastructure/setTestEnvLoggingLevelsJob'
 import { plainToInstance } from 'class-transformer'
 import log from 'log'
 import config from '../config'
 import { DefaultAzureCredential } from '@azure/identity'
 
 export async function manuallySetLoggingLevels (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  const notificationClient = getNotificationClient(JobType.RESET_LOGGING_LEVELS.valueOf())
+  const notificationClient = getNotificationClient(JobType.SET_LOGGING_LEVELS.valueOf())
   const azureCredential = new DefaultAzureCredential()
   const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
 
-  const body = await request.json() as ResetTestEnvLoggingLevelsJobArgs
+  const body = await request.json() as SetTestEnvLoggingLevelsJobArgs
 
-  const params = plainToInstance(ResetTestEnvLoggingLevelsJobArgs, body)
+  const params = plainToInstance(SetTestEnvLoggingLevelsJobArgs, body)
   const errors = await params.validateObject()
 
   if (errors != null && errors.length > 0) {
@@ -38,7 +38,7 @@ export async function manuallySetLoggingLevels (request: HttpRequest, context: I
       }
     }
   }
-  const job = new ResetTestEnvLoggingLevelsJob(notificationClient, {
+  const job = new SetTestEnvLoggingLevelsJob(notificationClient, {
     webResourceGroup: config.azure.webResourceGroup
   }, params, azureService)
   const result = await job.execute()

@@ -3,13 +3,13 @@ import config from '../config'
 import { JobType } from '../service/job/JobType'
 import { runJob } from '../service/job/jobService'
 
-const { jobs: { resetLoggingLevels: { cron, runOnStartup } } } = config
+const { jobs: { setLoggingLevels: { cron, runOnStartup } } } = config
 
 export async function resetLoggingLevels (
   myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
-  await runJob(JobType.RESET_LOGGING_LEVELS)
+  await runJob(JobType.SET_LOGGING_LEVELS)
 }
 
 app.timer('resetLoggingLevels', {

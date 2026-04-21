@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 import { getArrayFromCsvEnvVar } from './util/utils'
-import { type LoggingLevels } from './service/job/infrastructure/resetTestEnvLoggingLevelsJobArgs'
+import { type LoggingLevels } from './service/job/infrastructure/setTestEnvLoggingLevelsJobArgs'
 
 const env = process.env
 
@@ -30,9 +30,9 @@ const config = {
     }
   },
   jobs: {
-    resetLoggingLevels: {
-      cron: env.RESET_LOGGING_LEVELS_CRON ?? '0 0 20 * * 5',
-      runOnStartup: JSON.parse(env.RESET_LOGGING_LEVELS_RUN_ON_STARTUP ?? 'false') as boolean,
+    setLoggingLevels: {
+      cron: env.SET_LOGGING_LEVELS_CRON ?? '0 0 20 * * 5',
+      runOnStartup: JSON.parse(env.SET_LOGGING_LEVELS_RUN_ON_STARTUP ?? 'false') as boolean,
       defaultArgs: {
         loggingLevel: 'ERROR' as LoggingLevels
       }

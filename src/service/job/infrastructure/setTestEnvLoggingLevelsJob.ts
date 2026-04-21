@@ -1,29 +1,29 @@
 import { Job } from '../Job'
 import { type JobResult } from '../jobService'
 import { type NotificationClient } from '../../notification/notifications'
-import { type ResetTestEnvLoggingLevelsJobArgs } from './resetTestEnvLoggingLevelsJobArgs'
+import { type SetTestEnvLoggingLevelsJobArgs } from './setTestEnvLoggingLevelsJobArgs'
 import { type AzureClientService } from '../../azure/infrastructure/azureClientService'
-import { type ResetTestEnvLoggingLevelsJobConfig } from './ResetTestEnvLoggingLevelsJobConfig'
+import { type SetTestEnvLoggingLevelsJobConfig } from './SetTestEnvLoggingLevelsJobConfig'
 import { CONFIG_OP, type ConfigOperation } from '../../../domain/azure/azureWebAppClient'
 
-export class ResetTestEnvLoggingLevelsJob extends Job {
+export class SetTestEnvLoggingLevelsJob extends Job {
   constructor (notificationClient: NotificationClient,
-    private readonly config: ResetTestEnvLoggingLevelsJobConfig,
-    private _args: ResetTestEnvLoggingLevelsJobArgs,
+    private readonly config: SetTestEnvLoggingLevelsJobConfig,
+    private _args: SetTestEnvLoggingLevelsJobArgs,
     private readonly azureClientService: AzureClientService) {
     super(notificationClient)
   }
 
-  get args (): ResetTestEnvLoggingLevelsJobArgs {
+  get args (): SetTestEnvLoggingLevelsJobArgs {
     return this._args
   }
 
-  set args (value: ResetTestEnvLoggingLevelsJobArgs) {
+  set args (value: SetTestEnvLoggingLevelsJobArgs) {
     this._args = value
   }
 
   getName (): string {
-    return 'Reset test environment logging levels'
+    return 'Set test environment logging levels'
   }
 
   APP_INSIGHTS_LOG_LEVEL_KEY = 'APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL'

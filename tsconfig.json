@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "node16",
     "esModuleInterop": true,
     "target": "ESNext",
     "outDir": "dist",

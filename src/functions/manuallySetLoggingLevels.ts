@@ -19,14 +19,17 @@ export async function manuallySetLoggingLevels (request: HttpRequest, context: I
   const params = plainToInstance(ResetTestEnvLoggingLevelsJobArgs, body)
   const errors = await params.validateObject()
 
-  if (errors != null) {
+  if (errors != null && errors.length > 0) {
+    const eList: string[] = []
     const formattedErrors = errors.map(err => {
+      const errors = (err.constraints != null) ? Object.values(err.constraints) : []
+      eList.push(`${err.property}: ${errors.join(', ')}`)
       return ({
         field: err.property,
-        errors: (err.constraints != null) ? Object.values(err.constraints) : []
+        errors
       })
     })
-    log.error('Validator errors: ' + formattedErrors.join(', '))
+    log.error('Validator errors: ' + eList.join(' | '))
     return {
       status: 400,
       jsonBody: {

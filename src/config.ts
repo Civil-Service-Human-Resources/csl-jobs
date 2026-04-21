@@ -31,7 +31,7 @@ const config = {
   },
   jobs: {
     resetLoggingLevels: {
-      cron: env.RESET_LOGGING_LEVELS_CRON ?? '0 0 1 * * 0',
+      cron: env.RESET_LOGGING_LEVELS_CRON ?? '0 0 20 * * 5',
       runOnStartup: JSON.parse(env.RESET_LOGGING_LEVELS_RUN_ON_STARTUP ?? 'false') as boolean,
       defaultArgs: {
         loggingLevel: 'ERROR' as LoggingLevels

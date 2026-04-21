@@ -5,7 +5,9 @@ const LOGGING_LEVELS = ['INFO', 'DEBUG', 'TRACE', 'ERROR', 'WARN']
 export type LoggingLevels = typeof LOGGING_LEVELS[number]
 
 export class ResetTestEnvLoggingLevelsJobArgs extends Validatable {
-  @IsIn(LOGGING_LEVELS)
+  @IsIn(LOGGING_LEVELS, {
+    message: 'Log level must be one of ' + LOGGING_LEVELS.join(', ')
+  })
   public loggingLevel: LoggingLevels
 
   constructor (loggingLevel: LoggingLevels) {

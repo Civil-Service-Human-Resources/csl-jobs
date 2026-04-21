@@ -48,7 +48,7 @@ export async function manuallySetLoggingLevels (request: HttpRequest, context: I
 }
 
 app.http('manuallySetLoggingLevels', {
-  methods: ['POST'],
-  authLevel: 'function',
+  methods: ['GET', 'POST'],
+  authLevel: 'admin',
   handler: manuallySetLoggingLevels
 })

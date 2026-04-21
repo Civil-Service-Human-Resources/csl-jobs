@@ -12,6 +12,10 @@ import { OBTStatsJob } from './MI/OBTStats'
 import { HMRCSkillsJob } from './MI/HMRCSkillsJob'
 import { type TableService } from '../azure/storage/table/service'
 import { JobTableService } from '../azure/storage/table/jobTableService'
+import { ResetTestEnvLoggingLevelsJob } from './infrastructure/resetTestEnvLoggingLevelsJob'
+import { AzureClientService } from '../azure/infrastructure/azureClientService'
+import { ResetTestEnvLoggingLevelsJobArgs } from './infrastructure/resetTestEnvLoggingLevelsJobArgs'
+import { DefaultAzureCredential } from '@azure/identity'
 
 export interface JobResult {
   text: string
@@ -50,6 +54,15 @@ export const runJob = async (jobType: JobType): Promise<void> => {
         config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
         config.jobs.obtStats.courseIds, tableService)
       break
+    case JobType.RESET_LOGGING_LEVELS: {
+      const azureCredential = new DefaultAzureCredential()
+      const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
+      const args = new ResetTestEnvLoggingLevelsJobArgs(config.jobs.resetLoggingLevels.defaultArgs.loggingLevel)
+      job = new ResetTestEnvLoggingLevelsJob(notificationClient, {
+        webResourceGroup: config.azure.webResourceGroup
+      }, args, azureService)
+      break
+    }
     default:
       job = undefined
       break

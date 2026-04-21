@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 import { getArrayFromCsvEnvVar } from './util/utils'
+import { type LoggingLevels } from './service/job/infrastructure/resetTestEnvLoggingLevelsJobArgs'
 
 const env = process.env
 
@@ -29,6 +30,13 @@ const config = {
     }
   },
   jobs: {
+    resetLoggingLevels: {
+      cron: env.RESET_LOGGING_LEVELS_CRON ?? '0 0 1 * * 0',
+      runOnStartup: JSON.parse(env.RESET_LOGGING_LEVELS_RUN_ON_STARTUP ?? 'false') as boolean,
+      defaultArgs: {
+        loggingLevel: 'ERROR' as LoggingLevels
+      }
+    },
     redundantTokens: {
       cron: env.REDUNDANT_TOKEN_CRON ?? '0 0 1 * * 0',
       runOnStartup: JSON.parse(env.REDUNDANT_TOKEN_RUN_ON_STARTUP ?? 'false') as boolean,
@@ -112,6 +120,8 @@ const config = {
     }
   },
   azure: {
+    subscriptionName: env.SUBSCRIPTION_ID ?? 'CSL-Staging',
+    webResourceGroup: env.WEB_RESOURCE_GROUP ?? 'lpgintegration',
     siteName: env.WEBSITE_SITE_NAME ?? 'csl-jobs-local',
     storage: {
       accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',

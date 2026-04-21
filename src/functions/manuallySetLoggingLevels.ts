@@ -23,7 +23,7 @@ export async function manuallySetLoggingLevels (request: HttpRequest, context: I
     const formattedErrors = errors.map(err => {
       return ({
         field: err.property,
-        errors: Object.values((err.constraints != null) || {})
+        errors: (err.constraints != null) ? Object.values(err.constraints) : []
       })
     })
     log.error('Validator errors: ' + formattedErrors.join(', '))

@@ -120,7 +120,7 @@ const config = {
     }
   },
   azure: {
-    subscriptionName: env.SUBSCRIPTION_ID ?? 'CSL-Staging',
+    subscriptionName: env.SUBSCRIPTION_NAME ?? 'CSL-Staging',
     webResourceGroup: env.WEB_RESOURCE_GROUP ?? 'lpgintegration',
     siteName: env.WEBSITE_SITE_NAME ?? 'csl-jobs-local',
     storage: {

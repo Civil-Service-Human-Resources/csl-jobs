@@ -93,6 +93,23 @@ const config = {
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
       courseIds: (env.OBT_COURSE_IDS ?? '').split(','),
       runOnStartup: JSON.parse(env.OBT_STATS_RUN_ON_STARTUP ?? 'false') as boolean
+    },
+    scaleDownAppServices: {
+      cron: env.SCALE_DOWN_CRON ?? '0 18 * * 5',
+      runOnStartup: JSON.parse(env.SCALE_DOWN_RUN_ON_STARTUP ?? 'false') as boolean,
+      scaleUpInstances: {
+        notificationService: env.SCALE_UP_NOTIFICATION_SERVICE_INSTANCES ?? 1,
+        reportService: env.SCALE_UP_REPORT_SERVICE_INSTANCES ?? 1,
+        uiService: env.SCALE_UP_UI_SERVICE_INSTANCES ?? 1,
+        rusticiEngine: env.SCALE_UP_RUSTICI_ENGINE_INSTANCES ?? 1,
+        learnerRecordService: env.SCALE_UP_LEARNER_RECORD_SERVICE_INSTANCES ?? 1,
+        identityManagementService: env.SCALE_UP_IDENTITY_MANAGEMENT_SERVICE_INSTANCES ?? 1,
+        cslService: env.SCALE_UP_CSL_SERVICE_INSTANCES ?? 1,
+        identityService: env.SCALE_UP_IDENTITY_SERVICE_INSTANCES ?? 1,
+        learningCatalogueService: env.SCALE_UP_LEARNING_CATALOGUE_SERVICE_INSTANCES ?? 1,
+        civilServantRegistryService: env.SCALE_UP_CIVIL_SERVANT_REGISTRY_SERVICE_INSTANCES ?? 1,
+        managementService: env.SCALE_UP_MANAGEMENT_SERVICE_INSTANCES ?? 1
+      }
     }
   },
   notifications: {

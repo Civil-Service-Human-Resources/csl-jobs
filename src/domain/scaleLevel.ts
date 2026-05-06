@@ -1,6 +1,6 @@
-enum ScaleLevel{
-    DOWN,
-    UP
+enum ScaleLevel {
+  DOWN,
+  UP
 }
 
 export default ScaleLevel

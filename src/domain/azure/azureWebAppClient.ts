@@ -1,4 +1,4 @@
-import { AppServicePlan, AppServicePlansCreateOrUpdateResponse, AppServicePlansGetResponse, type Site, type WebSiteManagementClient } from '@azure/arm-appservice'
+import type { AppServicePlan, AppServicePlansCreateOrUpdateResponse, AppServicePlansGetResponse, Site, WebSiteManagementClient } from '@azure/arm-appservice'
 import log from 'log'
 import JobReport from '../jobReport'
 import ScaleLevel from '../scaleLevel'
@@ -100,28 +100,27 @@ export class AzureWebAppClient {
     }
   }
 
-  async updateInstanceCountForAllAppServicesInResourceGroup(resourceGroup: string, scaleLevel: ScaleLevel = ScaleLevel.DOWN): Promise<JobReport> {
+  async updateInstanceCountForAllAppServicesInResourceGroup (resourceGroup: string, scaleLevel: ScaleLevel = ScaleLevel.DOWN): Promise<JobReport> {
     const report: JobReport = new JobReport()
 
-    if(scaleLevel === ScaleLevel.DOWN){
+    if (scaleLevel === ScaleLevel.DOWN) {
       const appServicePlanList: AppServicePlan[] = await this.getWebAppServicePlansInResourceGroup(resourceGroup)
 
-      for(const appServicePlan of appServicePlanList){
-        try{
-          if(appServicePlan.name){
+      for (const appServicePlan of appServicePlanList) {
+        try {
+          if (appServicePlan.name !== undefined) {
             const result: AppServicePlansCreateOrUpdateResponse = await this.updateInstanceCountForAppService(resourceGroup, appServicePlan.name, 1)
-            log.info(`App service plan ${appServicePlan.name} updated. It now has ${result.sku?.capacity} instances.`)
+            log.info(`App service plan ${appServicePlan.name} updated.`)
+            log.debug(result)
           }
           report.addSuccessful()
-        }
-        catch(e: any){
+        } catch (e: any) {
           const errorMsg = e as string
-          report.addError(`Failed to update instance count for app service plan ${appServicePlan.name}: ${errorMsg}`)
+          report.addError(`Failed to update instance count for app service plan ${appServicePlan.name !== undefined ? appServicePlan.name : ''}: ${errorMsg}`)
         }
       }
       return report
-    }
-    else{
+    } else {
       const instanceCounts = [
         {
           appServicePlanName: `lpg-${resourceGroup}-notification-serviceserviceplan`,
@@ -169,14 +168,14 @@ export class AzureWebAppClient {
         }
       ]
 
-      for(const servicePlanInstance of instanceCounts){
+      for (const servicePlanInstance of instanceCounts) {
         const { appServicePlanName, instanceCount } = servicePlanInstance
-        try{
+        try {
           const result: AppServicePlansCreateOrUpdateResponse = await this.updateInstanceCountForAppService(resourceGroup, appServicePlanName, Number(instanceCount))
-          log.info(`App service plan ${appServicePlanName} updated. It now has ${result.sku?.capacity} instances.`)
+          log.info(`App service plan ${appServicePlanName} updated.`)
+          log.debug(result)
           report.addSuccessful()
-        }
-        catch(e: any){
+        } catch (e: any) {
           const errorMsg = e as string
           report.addError(`Failed to update instance count for app service plan ${appServicePlanName}: ${errorMsg}`)
         }
@@ -185,11 +184,11 @@ export class AzureWebAppClient {
     }
   }
 
-  async updateInstanceCountForAppService(resourceGroup: string, appName: string, instanceCount: number): Promise<AppServicePlan>{
+  async updateInstanceCountForAppService (resourceGroup: string, appName: string, instanceCount: number): Promise<AppServicePlan> {
     const client: WebSiteManagementClient = this.webClient
     const appServicePlan: AppServicePlansGetResponse = await client.appServicePlans.get(resourceGroup, appName)
 
-    if(appServicePlan.sku){
+    if (appServicePlan.sku != null) {
       appServicePlan.sku.capacity = instanceCount
 
       const result: AppServicePlansCreateOrUpdateResponse = await client.appServicePlans.beginCreateOrUpdateAndWait(
@@ -200,6 +199,6 @@ export class AzureWebAppClient {
       return result
     }
 
-    throw new Error("SKU not found")
+    throw new Error('SKU not found')
   }
 }

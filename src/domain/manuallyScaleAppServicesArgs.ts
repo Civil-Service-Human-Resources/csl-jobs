@@ -1,4 +1,4 @@
-import ScaleLevel from "./scaleLevel";
+import type ScaleLevel from './scaleLevel'
 
 export class ManuallyScaleAppServicesArgs {
   public scaleLevel: ScaleLevel

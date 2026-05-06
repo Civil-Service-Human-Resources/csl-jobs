@@ -1,16 +1,16 @@
-export default class JobReport{
+export default class JobReport {
   successful: number = 0
   errors: string[] = []
 
-  addSuccessful(){
+  addSuccessful (): void {
     this.successful++
   }
 
-  addError(error: string){
+  addError (error: string): void {
     this.errors.push(error)
   }
 
-  getReport(){
+  getReport (): string {
     return `Successful processes: ${this.successful}, Failed processes: ${this.errors.length}`
   }
 }

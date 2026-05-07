@@ -7,8 +7,9 @@ import ScaleLevel from '../domain/scaleLevel'
 import log from 'log'
 
 export async function manuallyScaleAppServices (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  log.info('Received request to manually scale app services')
   const azureWebAppClient: AzureWebAppClient = await this.azureClientService.getWebsiteManagementClient()
-  log.info('Received request to manually scale app services in resource group: ' + config.azure.webResourceGroup)
+  log.debug('Retrieved Azure Web App client')
   const body: ManuallyScaleAppServicesArgs = await request.json() as ManuallyScaleAppServicesArgs
   log.info('Scaling app services to level: ' + body.scaleLevel)
   const report: JobReport = await azureWebAppClient.updateInstanceCountForAllAppServicesInResourceGroup(config.azure.webResourceGroup, ScaleLevel[body.scaleLevel])

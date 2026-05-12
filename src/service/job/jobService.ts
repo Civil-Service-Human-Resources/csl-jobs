@@ -64,7 +64,7 @@ export const runJob = async (jobType: JobType): Promise<void> => {
       }, args, azureService)
       break
     }
-    case JobType.SCALE_DOWN_APP_SERVICES: {
+    case JobType.SCALE_APP_SERVICES: {
       job = new ScaleOutJob(notificationClient, azureService)
       break
     }

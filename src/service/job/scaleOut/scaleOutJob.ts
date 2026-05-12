@@ -7,7 +7,7 @@ import { type NotificationClient } from '../../notification/notifications'
 import { type AzureWebAppClient } from '../../../domain/azure/azureWebAppClient'
 import log from 'log'
 import type JobReport from '../../../domain/jobReport'
-import ScaleLevel from '../../../domain/scaleLevel'
+import { type Site } from '@azure/arm-appservice'
 
 const { azure: { webResourceGroup } } = config
 
@@ -20,7 +20,16 @@ export class ScaleOutJob extends Job {
     log.info('Starting app service scale out job')
     const azureWebAppClient: AzureWebAppClient = await this.azureClientService.getWebsiteManagementClient()
 
-    const jobReport: JobReport = await azureWebAppClient.updateInstanceCountForAllAppServicesInResourceGroup(webResourceGroup, ScaleLevel.DOWN)
+    const webApps: Site[] = await azureWebAppClient.getWebAppsInResourceGroup(webResourceGroup)
+    const webAppPlans: string[] = webApps.map(app => app.serverFarmId?.split('/').slice(-1)[0]).filter((plan): plan is string => plan !== undefined)
+    log.info(`Found ${webApps.length} web apps across ${new Set(webAppPlans).size} app service plans in resource group ${webResourceGroup}`)
+
+    const appServicePlanInstances = webAppPlans.map(plan => ({
+      appServicePlanName: plan,
+      instanceCount: 1
+    }))
+
+    const jobReport: JobReport = await azureWebAppClient.updateInstanceCountsForAppServicesInResourceGroup(webResourceGroup, appServicePlanInstances)
 
     if (jobReport.errors.length > 0) {
       log.debug(`Errors were encountered during the scale out process: ${jobReport.errors.join(', ')}`)

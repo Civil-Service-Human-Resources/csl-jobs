@@ -74,6 +74,8 @@ export async function manuallyScaleAppServices (request: HttpRequest, context: I
     }
   } catch (err: any) {
     log.error(`Error processing request: ${err as string}`)
+    console.log(`Error: ${err as string}`);
+    
     return {
       status: 500,
       jsonBody: {

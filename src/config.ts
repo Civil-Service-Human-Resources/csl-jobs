@@ -138,7 +138,7 @@ const config = {
     },
     production: {
       subscriptionName: env.PROD_SUBSCRIPTION_NAME ?? 'CSL-Production',
-      webResourceGroup: env.WEB_RESOURCE_GROUP ?? 'lpgprod'
+      webResourceGroup: env.PROD_WEB_RESOURCE_GROUP ?? 'lpgprod'
     }
   },
   sftp: {

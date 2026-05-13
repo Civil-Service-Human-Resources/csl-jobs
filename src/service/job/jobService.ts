@@ -16,6 +16,7 @@ import { SetTestEnvLoggingLevelsJob } from './infrastructure/setTestEnvLoggingLe
 import { AzureClientService } from '../azure/infrastructure/azureClientService'
 import { SetTestEnvLoggingLevelsJobArgs } from './infrastructure/setTestEnvLoggingLevelsJobArgs'
 import { DefaultAzureCredential } from '@azure/identity'
+import { ScaleOutJob } from './scaleOut/scaleOutJob'
 
 export interface JobResult {
   text: string
@@ -25,6 +26,8 @@ export const runJob = async (jobType: JobType): Promise<void> => {
   const notificationClient = getNotificationClient(jobType.valueOf())
   let job: Job | undefined
   let tableService: TableService | undefined
+  const azureCredential = new DefaultAzureCredential()
+  const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
   switch (jobType) {
     case JobType.COURSE_COMPLETIONS:
       tableService = new JobTableService('courseCompletions')
@@ -55,12 +58,14 @@ export const runJob = async (jobType: JobType): Promise<void> => {
         config.jobs.obtStats.courseIds, tableService)
       break
     case JobType.SET_LOGGING_LEVELS: {
-      const azureCredential = new DefaultAzureCredential()
-      const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
       const args = new SetTestEnvLoggingLevelsJobArgs(config.jobs.setLoggingLevels.defaultArgs.loggingLevel)
       job = new SetTestEnvLoggingLevelsJob(notificationClient, {
         webResourceGroup: config.azure.webResourceGroup
       }, args, azureService)
+      break
+    }
+    case JobType.SCALE_APP_SERVICES: {
+      job = new ScaleOutJob(notificationClient, azureService)
       break
     }
     default:

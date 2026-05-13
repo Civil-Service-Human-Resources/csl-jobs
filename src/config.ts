@@ -93,6 +93,10 @@ const config = {
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
       courseIds: (env.OBT_COURSE_IDS ?? '').split(','),
       runOnStartup: JSON.parse(env.OBT_STATS_RUN_ON_STARTUP ?? 'false') as boolean
+    },
+    scaleAppServices: {
+      cron: env.SCALE_DOWN_CRON ?? '0 18 * * 5',
+      runOnStartup: JSON.parse(env.SCALE_DOWN_RUN_ON_STARTUP ?? 'false') as boolean
     }
   },
   notifications: {
@@ -131,6 +135,10 @@ const config = {
       blob: {
         defaultDaysToKeepDownloadLinksActive: parseInt(env.AZURE_BLOB_DAYS_TO_KEEP_LINKS_ACTIVE ?? '7')
       }
+    },
+    production: {
+      subscriptionName: env.PROD_SUBSCRIPTION_NAME ?? 'CSL-Production',
+      webResourceGroup: env.PROD_WEB_RESOURCE_GROUP ?? 'lpgprod'
     }
   },
   sftp: {

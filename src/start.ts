@@ -10,7 +10,8 @@ const localJobs: Map<string, JobType> = new Map<string, JobType>([
   ['obtStats', JobType.OBT_STATS],
   ['generateSkillsCompletedLearnerRecords', JobType.SKILLS_COMPLETED_LEARNER_RECORDS],
   ['generateHMRCSkillsLearnerRecords', JobType.HMRC_SKILLS_COMPLETED_LEARNER_RECORDS],
-  ['setLoggingLevels', JobType.SET_LOGGING_LEVELS]
+  ['setLoggingLevels', JobType.SET_LOGGING_LEVELS],
+  ['scaleAppServices', JobType.SCALE_APP_SERVICES]
 ])
 
 const args = parseArgs({

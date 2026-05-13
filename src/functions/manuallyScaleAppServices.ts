@@ -40,7 +40,7 @@ export async function manuallyScaleAppServices (request: HttpRequest, context: I
           log.error(`Failed to determine app service plan for production app service ${appName}. Skipping scaling for this app service.`)
           continue
         }
-        const plan: AppServicePlan = await productionAzureWebAppClient.getWebAppServicePlan(config.azure.webResourceGroup, planName)
+        const plan: AppServicePlan = await productionAzureWebAppClient.getWebAppServicePlan(config.azure.production.webResourceGroup, planName)
         if (plan.sku === undefined || plan.sku.capacity === undefined) {
           log.error(`Failed to determine instance count for app service plan ${planName}. Skipping scaling for app service ${appName}.`)
           continue

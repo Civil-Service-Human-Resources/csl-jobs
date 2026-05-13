@@ -25,7 +25,7 @@ export async function manuallyScaleAppServices (request: HttpRequest, context: I
         instanceCount: 1
       }))
     } else {
-      const productionAppServices: Site[] = await productionAzureWebAppClient.getWebAppsInResourceGroup(config.azure.webResourceGroup)
+      const productionAppServices: Site[] = await productionAzureWebAppClient.getWebAppsInResourceGroup(config.azure.production.webResourceGroup)
 
       for (const appService of productionAppServices) {
         const appName = appService.name
@@ -80,7 +80,7 @@ export async function manuallyScaleAppServices (request: HttpRequest, context: I
     return {
       status: 500,
       jsonBody: {
-        error: `Error: ${errorMsg}`
+        error: errorMsg
       }
     }
   }

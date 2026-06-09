@@ -12,6 +12,11 @@ import { OBTStatsJob } from './MI/OBTStats'
 import { HMRCSkillsJob } from './MI/HMRCSkillsJob'
 import { type TableService } from '../azure/storage/table/service'
 import { JobTableService } from '../azure/storage/table/jobTableService'
+import { SetTestEnvLoggingLevelsJob } from './infrastructure/setTestEnvLoggingLevelsJob'
+import { AzureClientService } from '../azure/infrastructure/azureClientService'
+import { SetTestEnvLoggingLevelsJobArgs } from './infrastructure/setTestEnvLoggingLevelsJobArgs'
+import { DefaultAzureCredential } from '@azure/identity'
+import { ScaleOutJob } from './scaleOut/scaleOutJob'
 
 export interface JobResult {
   text: string
@@ -21,6 +26,8 @@ export const runJob = async (jobType: JobType): Promise<void> => {
   const notificationClient = getNotificationClient(jobType.valueOf())
   let job: Job | undefined
   let tableService: TableService | undefined
+  const azureCredential = new DefaultAzureCredential()
+  const azureService = new AzureClientService(azureCredential, config.azure.subscriptionName)
   switch (jobType) {
     case JobType.COURSE_COMPLETIONS:
       tableService = new JobTableService('courseCompletions')
@@ -50,6 +57,17 @@ export const runJob = async (jobType: JobType): Promise<void> => {
         config.jobs.obtStats.bucketAlias, config.jobs.obtStats.keySubfolder,
         config.jobs.obtStats.courseIds, tableService)
       break
+    case JobType.SET_LOGGING_LEVELS: {
+      const args = new SetTestEnvLoggingLevelsJobArgs(config.jobs.setLoggingLevels.defaultArgs.loggingLevel)
+      job = new SetTestEnvLoggingLevelsJob(notificationClient, {
+        webResourceGroup: config.azure.webResourceGroup
+      }, args, azureService)
+      break
+    }
+    case JobType.SCALE_APP_SERVICES: {
+      job = new ScaleOutJob(notificationClient, azureService)
+      break
+    }
     default:
       job = undefined
       break

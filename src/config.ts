@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import { NOTIFICATION_LEVEL } from './service/notification/NotificationLevel'
 import logNode = require('log-node')
 import { getArrayFromCsvEnvVar } from './util/utils'
+import { type LoggingLevels } from './service/job/infrastructure/setTestEnvLoggingLevelsJobArgs'
 
 const env = process.env
 
@@ -29,6 +30,13 @@ const config = {
     }
   },
   jobs: {
+    setLoggingLevels: {
+      cron: env.SET_LOGGING_LEVELS_CRON ?? '0 0 20 * * 5',
+      runOnStartup: JSON.parse(env.SET_LOGGING_LEVELS_RUN_ON_STARTUP ?? 'false') as boolean,
+      defaultArgs: {
+        loggingLevel: 'ERROR' as LoggingLevels
+      }
+    },
     redundantTokens: {
       cron: env.REDUNDANT_TOKEN_CRON ?? '0 0 1 * * 0',
       runOnStartup: JSON.parse(env.REDUNDANT_TOKEN_RUN_ON_STARTUP ?? 'false') as boolean,
@@ -85,6 +93,10 @@ const config = {
       keySubfolder: env.OBT_S3_SUBFOLDER ?? 'onebigthing',
       courseIds: (env.OBT_COURSE_IDS ?? '').split(','),
       runOnStartup: JSON.parse(env.OBT_STATS_RUN_ON_STARTUP ?? 'false') as boolean
+    },
+    scaleAppServices: {
+      cron: env.SCALE_DOWN_CRON ?? '0 18 * * 5',
+      runOnStartup: JSON.parse(env.SCALE_DOWN_RUN_ON_STARTUP ?? 'false') as boolean
     }
   },
   notifications: {
@@ -112,6 +124,8 @@ const config = {
     }
   },
   azure: {
+    subscriptionName: env.SUBSCRIPTION_NAME ?? 'CSL-Staging',
+    webResourceGroup: env.WEB_RESOURCE_GROUP ?? 'lpgintegration',
     siteName: env.WEBSITE_SITE_NAME ?? 'csl-jobs-local',
     storage: {
       accountConnectionString: env.WEBSITE_CONTENTAZUREFILECONNECTIONSTRING ?? 'AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',
@@ -121,6 +135,10 @@ const config = {
       blob: {
         defaultDaysToKeepDownloadLinksActive: parseInt(env.AZURE_BLOB_DAYS_TO_KEEP_LINKS_ACTIVE ?? '7')
       }
+    },
+    production: {
+      subscriptionName: env.PROD_SUBSCRIPTION_NAME ?? 'CSL-Production',
+      webResourceGroup: env.PROD_WEB_RESOURCE_GROUP ?? 'lpgprod'
     }
   },
   sftp: {

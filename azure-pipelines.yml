@@ -20,7 +20,7 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '20'
+              versionSpec: '22.23.4'
             displayName: 'Install Node 20'
           - task: Npm@1
             inputs:
